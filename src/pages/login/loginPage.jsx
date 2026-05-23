@@ -11,18 +11,18 @@ export default function LoginPage(){
     const [password,setPassword] = useState("");
     const {setUser} = useAuth();
     const navigate = useNavigate();
+    const API_URL = import.meta.env.VITE_API_URL;
 
     async function handleLogin(){
         try{
-            const response = await axios.post("http://localhost:3000/api/users/login",{
+            const response = await axios.post(`${API_URL}/api/users/login`,{
                 email: email,
                 password: password
             })
-
             console.log(response.data)
             const userdetails  = response.data.user
             setUser(userdetails)
-            localStorage.setItem("user",JSON.stringify(userdetails))
+            localStorage.setItem("user",JSON.stringify(response.data))
             toast.success("Login Successful")
             
             userdetails.role==="admin" ? navigate("/admin") : navigate("/user")

@@ -7,8 +7,6 @@ export default function Sidebar() {
     const {user} = useAuth();
     const role = user?.role;   
 
-    console.log(user);
-
     const adminNav = [
         {id:1 , name:"Dashboard", path:"/admin"},
         {id:2 , name:"Bookings", path:"/admin/bookings"},
@@ -26,11 +24,14 @@ export default function Sidebar() {
         {id:6 , name:"Settings", path:"/user/settings"},
     ];
 
+    if(!role){
+        return null;
+    }
     const navItems = role === "admin" ? adminNav : userNav;
     
     return (
 
-        <div className="w-[300px] h-screen bg-[#0C0C0C] text-white ">
+        <div className="w-[300px] h-screen bg-[#0C0C0C] text-white">
             <h2 className="text-white font-bold text-2xl p-4 flex gap-2 items-center"><LuAudioWaveform />KV Audio</h2>
             
             <div className="flex flex-col gap-2 p-4">

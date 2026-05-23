@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export default function Header(){
     return(
         <div>
-            <header className="w-full h-[60px] shadow-lg bg-white flex justify-center items-center gap-12 text-black cursor-pointer  relative">
+            <header className="w-full h-[60px] shadow-lg bg-white flex justify-center items-center gap-12 text-black fixed top-0 z-50">
                 <LuAudioWaveform className="text-4xl absolute left-4 border border-1px border-black rounded-3xl bg-blue-500"/>
                 <div className="flex gap-6">
                     <Link to="/" className="hover:text-black hover:font-bold transition-all duration-200 cursor-pointer">Home</Link>

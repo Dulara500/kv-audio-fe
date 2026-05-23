@@ -7,7 +7,9 @@ export default function AuthProvider({children}){
 
     useEffect(()=>{
         const storedUser=localStorage.getItem("user");
-        setUser(JSON.parse(storedUser));
+        if(storedUser){
+            setUser((JSON.parse(storedUser)).user);
+        }
     },[])
 
     return(

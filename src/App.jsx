@@ -7,6 +7,7 @@ import AdminPanel from './pages/admin/adminPanel'
 import UserDashboard from './pages/user/userDashboard'
 import AppShell from './components/layouts/AppShell'
 import LoginPage from './pages/login/loginPage'
+import RegisterPage from './pages/register/regitstePage'
 import { Toaster } from 'react-hot-toast'
 
 
@@ -21,6 +22,7 @@ function App() {
           <Route path="/user/*" element={<UserDashboard />} />
         </Route>
         <Route path="/login" element={<LoginPage/>} />
+        <Route path="/register" element={<RegisterPage/>} />
         <Route path="/*" element={<Home />}/>
       </Routes>
     </BrowserRouter>

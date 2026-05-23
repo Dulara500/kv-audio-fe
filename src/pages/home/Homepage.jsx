@@ -5,7 +5,7 @@ import Gallery from "./galery";
 import Items from "./items";
 import Contact from "./contact";
 import Error from "./error";
-// import Register from "./register";
+
 export default function Homepage(){
     return (
         <div>
@@ -15,6 +15,7 @@ export default function Homepage(){
                 <Route path="/gallery" element={<Gallery/>} />
                 <Route path="/items" element={<Items/>} />
                 <Route path="/contact" element={<Contact/>} />
+                
                 <Route path="/*" element={<Error/>} />
             </Routes>
         </div>
