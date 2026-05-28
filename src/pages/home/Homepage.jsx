@@ -8,7 +8,7 @@ import Error from "./error";
 
 export default function Homepage(){
     return (
-        <div>
+        <div className="bg-primary">
             <Header/>
             <Routes>
                 <Route path="/" element={<Home />} />

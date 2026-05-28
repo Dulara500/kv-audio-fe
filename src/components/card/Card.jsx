@@ -1,7 +1,7 @@
 
 export default function Card({ ...props }) {
     return (
-        <div className="bg-gray-800 w-[300px] rounded-2xl shadow-lg overflow-hidden hover:scale-105 transition duration-300 mb-4">
+        <div className="bg-secondary w-[300px] rounded-2xl shadow-lg overflow-hidden hover:scale-105 transition duration-300 mb-4">
             
             {/* Image */}
             <img 
@@ -25,13 +25,13 @@ export default function Card({ ...props }) {
 
                 {/* Price + Button */}
                 <div className="flex justify-between items-center mt-2">
-                    <span className="text-green-400 font-bold text-lg">
+                    <span className="text-primary font-bold text-lg">
                         RS.{props.price}
                     </span>
-                    <p className="inline-block border border-green-500 text-green-600 text-xs font-semibold px-1 py-1 rounded-md">
+                    <p className="inline-block border border-primary text-primary text-xs font-semibold px-1 py-1 rounded-md">
   In stock
 </p>
-                    <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">
+                    <button className="bg-primary border border-accent hover:bg-accent hover:text-primary transition duration-300 px-3 py-1 rounded-lg text-sm ">
                         Buy
                     </button>
                 </div>

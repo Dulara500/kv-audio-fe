@@ -9,7 +9,7 @@ import AppShell from './components/layouts/AppShell'
 import LoginPage from './pages/login/loginPage'
 import RegisterPage from './pages/register/regitstePage'
 import { Toaster } from 'react-hot-toast'
-
+import Test from './components/test'
 
 function App() {
 
@@ -21,6 +21,7 @@ function App() {
           <Route path="/admin/*" element={<AdminPanel />} />
           <Route path="/user/*" element={<UserDashboard />} />
         </Route>
+        <Route path="/test" element={<Test/>}/>
         <Route path="/login" element={<LoginPage/>} />
         <Route path="/register" element={<RegisterPage/>} />
         <Route path="/*" element={<Home />}/>
