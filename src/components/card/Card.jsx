@@ -1,8 +1,8 @@
+import { Link } from "react-router-dom";
 
 export default function Card({ ...props }) {
     return (
         <div className="bg-secondary w-[300px] rounded-2xl shadow-lg overflow-hidden hover:scale-105 transition duration-300 mb-4">
-            
             {/* Image */}
             <img 
                 src={props.image} 
@@ -31,9 +31,9 @@ export default function Card({ ...props }) {
                     <p className="inline-block border border-primary text-primary text-xs font-semibold px-1 py-1 rounded-md">
   In stock
 </p>
-                    <button className="bg-primary border border-accent hover:bg-accent hover:text-primary transition duration-300 px-3 py-1 rounded-lg text-sm ">
-                        Buy
-                    </button>
+                    <Link to={`/product/${props.id}`} className="bg-primary text-secondary text-xs font-semibold border border-accent hover:bg-accent hover:text-primary transition duration-300 px-3 py-1 rounded-lg text-sm ">
+                        View product
+                    </Link>
                 </div>
             </div>
         </div>
