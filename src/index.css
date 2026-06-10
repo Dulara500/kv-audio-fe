@@ -1,7 +1,46 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #FFEAD3;
-  --color-secondary: #D25353;
-  --color-accent: #9E3B3B;
+  --color-primary: #E8C547;
+  --color-secondary: #0B0F1A;
+  --color-accent: #1E90FF;
+  --color-surface: #111827;
+  --color-surface-2: #1A2233;
+  --color-border: #2A3447;
+  --color-muted: #6B7A99;
+  --color-success: #22C55E;
+  --color-danger: #EF4444;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  background-color: #0B0F1A;
+  color: #E2E8F0;
+  font-family: 'Space Grotesk', sans-serif;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111827;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A3447;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #E8C547;
+}
+
+.font-mono-display {
+  font-family: 'Space Mono', monospace;
 }

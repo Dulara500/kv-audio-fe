@@ -20,7 +20,9 @@ function App() {
         <Route element={<AppShell/>}>  
           <Route path="/admin/*" element={<AdminPanel />} />
           <Route path="/user/*" element={<UserDashboard />} />
+          
         </Route>
+        
         <Route path="/test" element={<Test/>}/>
         <Route path="/login" element={<LoginPage/>} />
         <Route path="/register" element={<RegisterPage/>} />

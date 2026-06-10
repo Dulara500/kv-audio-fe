@@ -6,20 +6,23 @@ import Items from "./items";
 import Contact from "./contact";
 import Error from "./error";
 import ProductView from "./productView";
+import BookingPage from "./bookingPage"
 
 export default function Homepage(){
     return (
-        <div className="bg-primary">
+        <>
             <Header/>
+        <div className="pt-16 min-h-screen" style={{backgroundColor: "#0B0F1A"}}>
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/gallery" element={<Gallery/>} />
                 <Route path="/items" element={<Items/>} />
                 <Route path="/product/:id" element={<ProductView/>} />
                 <Route path="/contact" element={<Contact/>} />
-                
+                <Route path="/cart" element={<BookingPage/>}/>
                 <Route path="/*" element={<Error/>} />
             </Routes>
         </div>
+        </>
     );
 }
