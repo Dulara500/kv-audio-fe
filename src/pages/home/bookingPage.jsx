@@ -11,17 +11,23 @@ export default function BookingPage(){
     const navigate = useNavigate();
     const today = new Date();
     const maxStart = new Date();
-
     maxStart.setFullYear(today.getFullYear() + 1);
 
     const maxEnd = new Date();
     maxEnd.setMonth(today.getMonth() + 3);
 
-    const [days, setDays] = useState(0);
+    // Helper: add N days to a date string or Date and return formatted string
+    function addDays(date, n) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + n);
+        return formatDate(d);
+    }
+
+    const [days, setDays] = useState(1);
     const [Etotal,setEtotal] = useState(0);
     const [cart, setCart] = useState(loadCart());
-    const [Sdate,setSdate] = useState(formatDate(new Date()));
-    const [Edate,setEdate] = useState("");
+    const [Sdate,setSdate] = useState(formatDate(today));
+    const [Edate,setEdate] = useState(addDays(today, 1));
 
     useEffect(() => {
         if (Sdate && Edate) {
@@ -133,13 +139,20 @@ export default function BookingPage(){
                                     backgroundColor: "#1A2233",
                                     border: "1px solid #2A3447",
                                   }}
-                                  onChange={(e) => setSdate(e.target.value)}
+                                  onChange={(e) => {
+                                    const newStart = e.target.value;
+                                    setSdate(newStart);
+                                    // If current end date is not after the new start, push it forward
+                                    if (Edate <= newStart) {
+                                        setEdate(addDays(newStart, 1));
+                                    }
+                                  }}
                                 />
                                 <label style={{ color: "#6B7A99" }}>Ending Date</label>
                                 <input
                                   type="date"
-                                  value={Edate}
-                                  min={formatDate(today)}
+                                  value={Edate || addDays(Sdate, 1)}
+                                  min={addDays(Sdate, 1)}
                                   max={formatDate(maxEnd)}
                                   className="p-2 mt-2 rounded-md w-full"
                                   style={{
