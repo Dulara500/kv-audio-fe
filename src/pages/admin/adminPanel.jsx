@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Bookings from "./Bookings";
 import Products from "./products";
 import Users from "./users";
+import AdminMessages from "./adminMessages";
 
 export default function AdminPanel() {
     return (
@@ -20,6 +21,7 @@ export default function AdminPanel() {
                 <Route path="bookings" element={<Bookings />} />
                 <Route path="products" element={<Products />} />
                 <Route path="users" element={<Users />} />
+                <Route path="messages" element={<AdminMessages />} />
             </Routes>
         </div>
     );

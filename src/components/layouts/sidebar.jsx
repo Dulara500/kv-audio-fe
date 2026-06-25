@@ -2,7 +2,7 @@ import { LuAudioWaveform } from "react-icons/lu";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../Auth/AuthProvider";
 import Logout from "../../pages/login/logout";
-import { MdDashboard, MdBookmarks, MdInventory, MdPeople } from "react-icons/md";
+import { MdDashboard, MdBookmarks, MdInventory, MdPeople, MdMessage } from "react-icons/md";
 
 export default function Sidebar() {
     const {user} = useAuth();
@@ -14,19 +14,12 @@ export default function Sidebar() {
         {id:2, name:"Bookings", path:"/admin/bookings", icon: MdBookmarks},
         {id:3, name:"Products", path:"/admin/products", icon: MdInventory},
         {id:4, name:"Users", path:"/admin/users", icon: MdPeople},
+        {id:5, name:"Messages", path:"/admin/messages", icon: MdMessage},
     ];
 
-    const userNav = [
-        {id:1, name:"Dashboard", path:"/user", icon: MdDashboard},
-        {id:2, name:"Songs", path:"/user/songs", icon: MdInventory},
-        {id:3, name:"Artists", path:"/user/artists", icon: MdPeople},
-        {id:4, name:"Albums", path:"/user/albums", icon: MdBookmarks},
-        {id:5, name:"Playlists", path:"/user/playlists", icon: MdInventory},
-        {id:6, name:"Settings", path:"/user/settings", icon: MdDashboard},
-    ];
 
     if(!role){ return null; }
-    const navItems = role === "admin" ? adminNav : userNav;
+   
 
     return (
         <div className="w-[280px] h-screen flex flex-col"
@@ -53,7 +46,7 @@ export default function Sidebar() {
 
             {/* Nav */}
             <nav className="flex-1 px-4 py-2 flex flex-col gap-1">
-                {navItems.map((item) => {
+                {adminNav.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
                     return (

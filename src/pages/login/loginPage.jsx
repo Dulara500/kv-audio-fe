@@ -25,10 +25,10 @@ export default function LoginPage(){
             localStorage.setItem("user", JSON.stringify(response.data))
             console.log(localStorage.getItem("user"))
             toast.success("Login Successful")
-            userdetails.role === "admin" ? navigate("/admin") : navigate("/user")
+            userdetails.role === "admin" ? navigate("/admin") : navigate(-1)
         }catch(error){
-            toast.error("Login failed")
-            console.log(error)
+            console.log(error.response.data.message)
+            toast.error(error.response.data.message)
         }
     }
 

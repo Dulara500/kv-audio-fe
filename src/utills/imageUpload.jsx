@@ -8,6 +8,7 @@ const supabase = createClient(url,anon);
 
 export default async function uploadImage(file){
     if(!file){
+        console.log("no file selected")
         throw new Error ("no file selcected")
     }
     const fileName = `${Date.now()}-${file.name}`

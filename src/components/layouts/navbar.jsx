@@ -1,9 +1,12 @@
 import Logout from "../../pages/login/logout";
 import { useAuth } from "../../Auth/AuthProvider";
-import { MdOutlineNotifications, MdOutlineAccountCircle } from "react-icons/md";
+import { MdOutlineNotifications, MdOutlineAccountCircle, MdOutlineMessage } from "react-icons/md";
+import { Link } from "react-router-dom";
 
 export default function Navbar() {
     const {user} = useAuth();
+    const role = user?.role;
+    if(!role) {return null}
 
     return (
         <div className="w-full h-[60px]" style={{background: "#0B0F1A", borderBottom: "1px solid #2A3447"}}>

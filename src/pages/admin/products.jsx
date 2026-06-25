@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import uploadImage from "../../utills/imageUpload";
 import { IoAddOutline } from "react-icons/io5";
 import toast from "react-hot-toast";
 
@@ -11,6 +12,65 @@ const handleBlur = (e) => { e.target.style.borderColor = "#2A3447"; };
 const btnPrimary = "px-4 py-2.5 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90";
 const btnDanger = "px-4 py-2.5 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90";
 
+function FormModal({ title, onSubmit, onCancel, submitLabel,
+    keyVal, setKeyVal, name, setName, dimensions, setDimensions,
+    description, setDescription, category, setCategory, price, setPrice, setImage,image
+}) {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{background: "rgba(11,15,26,0.85)", backdropFilter: "blur(8px)"}}>
+            <div className="w-[440px] p-6 rounded-2xl flex flex-col gap-3"
+                style={{background: "#111827", border: "1px solid #2A3447", boxShadow: "0 20px 60px rgba(0,0,0,0.6)"}}>
+                <h2 className="text-lg font-bold tracking-wider uppercase text-white font-mono-display mb-2">{title}</h2>
+
+                <input disabled={title.includes("Update")} type="text" placeholder="Product Key" className={inputClass} style={inputStyle}
+                    onFocus={handleFocus} onBlur={handleBlur}
+                    onChange={(e) => setKeyVal(e.target.value)} value={keyVal}/>
+                <input type="text" placeholder="Product Name" className={inputClass} style={inputStyle}
+                    onFocus={handleFocus} onBlur={handleBlur}
+                    onChange={(e) => setName(e.target.value)} value={name}/>
+                <input type="text" placeholder="Dimensions" className={inputClass} style={inputStyle}
+                    onFocus={handleFocus} onBlur={handleBlur}
+                    onChange={(e) => setDimensions(e.target.value)} value={dimensions}/>
+                <textarea placeholder="Description" rows={3} className={inputClass} style={inputStyle}
+                    onFocus={handleFocus} onBlur={handleBlur}
+                    onChange={(e) => setDescription(e.target.value)} value={description}/>
+                <select value={category} className={inputClass} style={{...inputStyle, color: category ? "white" : "#6B7A99"}}
+                    onFocus={handleFocus} onBlur={handleBlur}
+                    onChange={(e) => setCategory(e.target.value)}>
+                    <option value="">-- Select Category --</option>
+                    <option value="audio">Audio</option>
+                    <option value="headphone">HeadPhone</option>
+                    <option value="speaker">Speakers</option>
+                    <option value="video equipment">Video Equipment</option>
+                    <option value="keyboard">Keyboard</option>
+                    <option value="bass">Bass</option>
+                    <option value="lighting">Lighting</option>
+                    <option value="stage equipment">Stage Equipment</option>
+                    <option value="accessories">Accessories</option>
+                </select>
+                <input type="number" placeholder="Price" className={inputClass} style={inputStyle}
+                    onFocus={handleFocus} onBlur={handleBlur}
+                    onChange={(e) => setPrice(e.target.value)} value={price}/>
+                <input type="file" multiple className={inputClass} style={inputStyle}
+                    onFocus={handleFocus} onBlur={handleBlur}
+                    onChange={(e) => setImage(e.target.files)}/>
+                <div className="flex gap-3 mt-2">
+                    <button className={`flex-1 ${btnPrimary}`}
+                        style={{background: "linear-gradient(135deg, #E8C547, #F59E0B)", color: "#0B0F1A"}}
+                        onClick={onSubmit}>
+                        {submitLabel}
+                    </button>
+                    <button className={`flex-1 ${btnPrimary}`}
+                        style={{border: "1px solid #2A3447", color: "#6B7A99"}}
+                        onClick={() => { onCancel(); }}>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function Products() {
     const API_URL = import.meta.env.VITE_API_URL;
     const [key, setKey] = useState("");
@@ -19,6 +79,7 @@ export default function Products() {
     const [price, setPrice] = useState(0);
     const [category, setCategory] = useState("");
     const [dimensions, setDimensions] = useState("");
+    const [image, setImage] = useState([]);
     const [addProductSection, setAddProductSection] = useState(false);
     const [updateProductSection, setUpdateProductSection] = useState(false);
     const [products, setProducts] = useState([]);
@@ -42,17 +103,40 @@ export default function Products() {
         }
     }
 
-    async function handleAddProducts(){
+    async function handleAddProducts() {
         const data = localStorage.getItem("user");
         const token = JSON.parse(data).token;
-        try{
-            await axios.post(`${API_URL}/api/products`, { key, name, dimensions, category, price, description }, {
+        try {
+            const uploadedUrls = [];
+            if (image && image.length > 0) {
+                toast.loading("Uploading images...", { id: "uploading" });
+                for (let i = 0; i < image.length; i++) {
+                    const url = await uploadImage(image[i]);
+                    uploadedUrls.push(url);
+                }
+                toast.dismiss("uploading");
+            }
+            
+            await axios.post(`${API_URL}/api/products`, { 
+                key, 
+                name, 
+                dimensions, 
+                category, 
+                price: Number(price), 
+                description, 
+                image: uploadedUrls.length > 0 ? uploadedUrls : undefined 
+            }, {
                 headers: { Authorization: "Bearer " + token }
             });
+            
             getproducts();
             toast.success("Product added successfully");
-        }catch(error){
-            toast.error("Product not added: " + error.response.data.message);
+            setAddProductSection(false);
+            resetForm();
+        } catch(error) {
+            toast.dismiss("uploading");
+            console.error(error);
+            toast.error("Product not added: " + (error.response?.data?.message || error.message));
         }
     }
 
@@ -80,17 +164,42 @@ export default function Products() {
         setUpdateProductSection(!updateProductSection);
     }
 
-    async function updateProduct(key, name, dimensions, description, category, price){
+    async function handleUpdateProduct() {
         const data = localStorage.getItem("user");
         const token = JSON.parse(data).token;
-        try{
-            await axios.put(`${API_URL}/api/products/${key}`, { name, dimensions, category, price, description }, {
+        try {
+            const uploadedUrls = [];
+            if (image && image.length > 0) {
+                toast.loading("Uploading images...", { id: "uploading" });
+                for (let i = 0; i < image.length; i++) {
+                    const url = await uploadImage(image[i]);
+                    uploadedUrls.push(url);
+                }
+                toast.dismiss("uploading");
+            }
+
+            const payload = { 
+                name, 
+                dimensions, 
+                category, 
+                price: Number(price), 
+                description 
+            };
+            if (uploadedUrls.length > 0) {
+                payload.image = uploadedUrls;
+            }
+
+            await axios.put(`${API_URL}/api/products/${key}`, payload, {
                 headers: { Authorization: "Bearer " + token }
             });
             getproducts();
             toast.success("Product updated successfully");
-        }catch(error){
-            toast.error("Product not updated: " + error);
+            setUpdateProductSection(false);
+            resetForm();
+        } catch(error) {
+            toast.dismiss("uploading");
+            console.error(error);
+            toast.error("Product not updated: " + (error.response?.data?.message || error.message));
         }
     }
 
@@ -113,59 +222,8 @@ export default function Products() {
         setDeleteSection(!deleteSection);
     }
 
-    const resetForm = () => { setKey(""); setName(""); setDescription(""); setPrice(0); setCategory(""); setDimensions(""); };
+    const resetForm = () => { setKey(""); setName(""); setDescription(""); setPrice(0); setCategory(""); setDimensions(""); setImage([]); };
 
-    const FormModal = ({ title, onSubmit, onCancel, submitLabel }) => (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{background: "rgba(11,15,26,0.85)", backdropFilter: "blur(8px)"}}>
-            <div className="w-[440px] p-6 rounded-2xl flex flex-col gap-3"
-                style={{background: "#111827", border: "1px solid #2A3447", boxShadow: "0 20px 60px rgba(0,0,0,0.6)"}}>
-                <h2 className="text-lg font-bold tracking-wider uppercase text-white font-mono-display mb-2">{title}</h2>
-
-                <input disabled={title.includes("Update")} type="text" placeholder="Product Key" className={inputClass} style={inputStyle}
-                    onFocus={handleFocus} onBlur={handleBlur}
-                    onChange={(e) => setKey(e.target.value)} value={key}/>
-                <input type="text" placeholder="Product Name" className={inputClass} style={inputStyle}
-                    onFocus={handleFocus} onBlur={handleBlur}
-                    onChange={(e) => setName(e.target.value)} value={name}/>
-                <input type="text" placeholder="Dimensions" className={inputClass} style={inputStyle}
-                    onFocus={handleFocus} onBlur={handleBlur}
-                    onChange={(e) => setDimensions(e.target.value)} value={dimensions}/>
-                <textarea placeholder="Description" rows={3} className={inputClass} style={inputStyle}
-                    onFocus={handleFocus} onBlur={handleBlur}
-                    onChange={(e) => setDescription(e.target.value)} value={description}/>
-                <select value={category} className={inputClass} style={{...inputStyle, color: category ? "white" : "#6B7A99"}}
-                    onFocus={handleFocus} onBlur={handleBlur}
-                    onChange={(e) => setCategory(e.target.value)}>
-                    <option value="">-- Select Category --</option>
-                    <option value="audio">Audio</option>
-                    <option value="headphone">HeadPhone</option>
-                    <option value="speaker">Speakers</option>
-                    <option value="video equipment">Video Equipment</option>
-                    <option value="keyboard">Keyboard</option>
-                    <option value="bass">Bass</option>
-                    <option value="lighting">Lighting</option>
-                    <option value="stage equipment">Stage Equipment</option>
-                    <option value="accessories">Accessories</option>
-                </select>
-                <input type="number" placeholder="Price" className={inputClass} style={inputStyle}
-                    onFocus={handleFocus} onBlur={handleBlur}
-                    onChange={(e) => setPrice(e.target.value)} value={price}/>
-
-                <div className="flex gap-3 mt-2">
-                    <button className={`flex-1 ${btnPrimary}`}
-                        style={{background: "linear-gradient(135deg, #E8C547, #F59E0B)", color: "#0B0F1A"}}
-                        onClick={() => { onSubmit(); onCancel(); resetForm(); }}>
-                        {submitLabel}
-                    </button>
-                    <button className={`flex-1 ${btnPrimary}`}
-                        style={{border: "1px solid #2A3447", color: "#6B7A99"}}
-                        onClick={() => { onCancel(); resetForm(); }}>
-                        Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
 
     return (
         <div className="relative">
@@ -193,7 +251,14 @@ export default function Products() {
                     title="Add Product"
                     submitLabel="Add Product"
                     onSubmit={handleAddProducts}
-                    onCancel={() => setAddProductSection(false)}
+                    onCancel={() => { setAddProductSection(false); resetForm(); }}
+                    keyVal={key} setKeyVal={setKey}
+                    name={name} setName={setName}
+                    dimensions={dimensions} setDimensions={setDimensions}
+                    description={description} setDescription={setDescription}
+                    category={category} setCategory={setCategory}
+                    price={price} setPrice={setPrice}
+                    image={image} setImage={setImage}
                 />
             )}
 
@@ -202,8 +267,15 @@ export default function Products() {
                 <FormModal
                     title="Update Product"
                     submitLabel="Update Product"
-                    onSubmit={() => updateProduct(key, name, dimensions, description, category, price)}
-                    onCancel={() => setUpdateProductSection(false)}
+                    onSubmit={handleUpdateProduct}
+                    onCancel={() => { setUpdateProductSection(false); resetForm(); }}
+                    keyVal={key} setKeyVal={setKey}
+                    name={name} setName={setName}
+                    dimensions={dimensions} setDimensions={setDimensions}
+                    description={description} setDescription={setDescription}
+                    category={category} setCategory={setCategory}
+                    price={price} setPrice={setPrice}
+                    image={image} setImage={setImage}
                 />
             )}
 

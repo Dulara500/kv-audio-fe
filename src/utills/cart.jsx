@@ -14,7 +14,7 @@ export function loadCart(){
     return cart;
 }
 
-export function addcart(key,price,qty){
+export function addcart(key,price,quantity){
     const cart = loadCart();
     let found = false;
 
@@ -24,7 +24,7 @@ export function addcart(key,price,qty){
         }
     }
     if(!found){
-        cart.orderedItems.push({key:key,price:price, qty:qty});
+        cart.orderedItems.push({key:key,price:price, quantity:quantity});
     }
     localStorage.setItem("cart",JSON.stringify(cart));
 }
@@ -45,7 +45,7 @@ export function incrementQuentity(key){
     const cart = loadCart();
     for(let i=0; i<cart.orderedItems.length; i++){
         if(cart.orderedItems[i].key===key){
-            cart.orderedItems[i].qty += 1;
+            cart.orderedItems[i].quantity += 1;
         }
     }
     localStorage.setItem("cart",JSON.stringify(cart));
@@ -55,7 +55,7 @@ export function decrementQuentity(key){
     const cart = loadCart();
     for(let i=0; i<cart.orderedItems.length; i++){
         if(cart.orderedItems[i].key===key){
-            cart.orderedItems[i].qty -= 1;
+            cart.orderedItems[i].quantity -= 1;
         }
     }
     localStorage.setItem("cart",JSON.stringify(cart));

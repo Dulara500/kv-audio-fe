@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 
 import Home from './pages/home/Homepage'
@@ -10,23 +10,36 @@ import LoginPage from './pages/login/loginPage'
 import RegisterPage from './pages/register/regitstePage'
 import { Toaster } from 'react-hot-toast'
 import Test from './components/test'
+import { useAuth } from './Auth/AuthProvider'
 
 function App() {
+  const { user } = useAuth();
+  const userAvailable = user ? true : false;
+  const role = user?.role;
 
   return (
     <BrowserRouter>
-      <Toaster/>
+      <Toaster />
       <Routes>
-        <Route element={<AppShell/>}>  
-          <Route path="/admin/*" element={<AdminPanel />} />
-          <Route path="/user/*" element={<UserDashboard />} />
-          
-        </Route>
-        
-        <Route path="/test" element={<Test/>}/>
-        <Route path="/login" element={<LoginPage/>} />
-        <Route path="/register" element={<RegisterPage/>} />
-        <Route path="/*" element={<Home />}/>
+        {role === "admin" ? (
+          <>
+            <Route element={<AppShell />}>
+              <Route path="/admin/*" element={<AdminPanel />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </>
+        ) : (
+          <>
+            <Route path="/*" element={<Home />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/test" element={<Test />} />
+            
+            <Route path="/admin/*" element={<Navigate to={userAvailable ? "/" : "/"} replace />} />
+            
+            
+          </>
+        )}
       </Routes>
     </BrowserRouter>
   )

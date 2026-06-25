@@ -53,7 +53,7 @@ export default function BookingPage(){
         let cart = loadCart();
         let total = 0;
         cart.orderedItems.forEach((item) => {
-            total += item.price * item.qty;
+            total += item.price * item.quantity;
         });
         return total*days;
     }
@@ -68,17 +68,22 @@ export default function BookingPage(){
         }
         const token = JSON.parse(data).token
         try{
-            await axios.post(`${API_URL}/api/oders/`,{
-                orderItems:orderItems,
-                days:days,
-                startingDate:startingDate,
-                endingDate:endingDate
-            },{
-                headers:{Authorization:`Bearer ${token}`}
+            const res = await axios.post(`${API_URL}/api/order/`,
+                {
+                    orderItems,
+                    days,
+                    startingDate,
+                    endingDate
+                },
+                {
+                    headers:{Authorization:`Bearer ${token}`}
             })
+            console.log("CART",cart.orderedItems);
+            toast.success("Order placed successfully")
+            
         }catch(error){
             console.log(error);
-            toast.error(error.response.data.message)
+            toast.error(error?.response?.data?.message || "Something went wrong")
         }
     }
 
@@ -117,7 +122,7 @@ export default function BookingPage(){
                     {/* Items */}
                     <div className="flex flex-col gap-3">
                         {cart.orderedItems.map((item) => (
-                            <BookingItem key={item.key} keys={item.key} qty={item.qty} item={item} refresh={reloadCart}/>
+                            <BookingItem key={item.key} keys={item.key} item={item} qty={item.quantity} refresh={reloadCart}/>
                         ))}
                     </div>
 
@@ -127,7 +132,7 @@ export default function BookingPage(){
                     <div className="mt-8 p-5 rounded-xl" style={{background: "#111827", border: "1px solid #2A3447"}}>
                         <h2 className="text-sm font-semibold tracking-widest uppercase mb-4" style={{color: "#6B7A99"}}>Order Summary</h2>
                         <div className="flex justify-between items-center pt-3" style={{borderTop: "1px solid #2A3447"}}>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex gap-2">
                                 <label style={{ color: "#6B7A99" }}>Starting Date</label>
                                 <input
                                   type="date"
@@ -162,18 +167,20 @@ export default function BookingPage(){
                                   onChange={(e) => setEdate(e.target.value)}
                                 />
                             </div>
-                            <div className="flex justify-between items-center">
-                                <span style={{ color: "#6B7A99" }}>Total Days: </span>
-                                <span className="text-white font-semibold ml-1">{days} days</span>
+                            <div className="flex flex-col">
+                                <div className="flex justify-between items-center">
+                                    <span style={{ color: "#6B7A99" }}>Total Days: </span>
+                                    <span className="text-white font-semibold ml-1">{days} days</span>
+                                </div>
+                                <span className="text-white font-semibold">Estimated Total: </span>
+                                <span className="text-xl font-bold font-mono-display" style={{color: "#E8C547"}}>
+                                    Rs. {Etotal.toFixed(2)}
+                                </span>
                             </div>
-                            <span className="text-white font-semibold">Estimated Total: </span>
-                            <span className="text-xl font-bold font-mono-display" style={{color: "#E8C547"}}>
-                                Rs. {Etotal.toFixed(2)}
-                            </span>
-                        </div>
+                            </div>
                         <button
                             className="w-full mt-4 py-3 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90"
-                            style={{background: "linear-gradient(135deg, #E8C547, #F59E0B)", color: "#0B0F1A"}} onClick={async() => {await placeOder(cart.orderedItems,days,Sdate,Edate); }}>
+                            style={{background: "linear-gradient(135deg, #E8C547, #F59E0B)", color: "#0B0F1A"}} onClick={() => placeOder(cart.orderedItems,days,Sdate,Edate)}>
                             Proceed to Checkout
                         </button>
                     </div>
