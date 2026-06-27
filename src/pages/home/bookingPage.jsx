@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect} from "react"
 import { loadCart } from "../../utills/cart"
 import BookingItem from "../../components/bookingItem";
 import { formatDate } from "../../utills/cart";
@@ -122,7 +122,7 @@ export default function BookingPage(){
                     {/* Items */}
                     <div className="flex flex-col gap-3">
                         {cart.orderedItems.map((item) => (
-                            <BookingItem key={item.key} keys={item.key} item={item} qty={item.quantity} refresh={reloadCart}/>
+                            <BookingItem key={item.key} keys={item.key} item={item} qty={item.quantity} refresh={reloadCart} />
                         ))}
                     </div>
 
@@ -180,7 +180,21 @@ export default function BookingPage(){
                             </div>
                         <button
                             className="w-full mt-4 py-3 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90"
-                            style={{background: "linear-gradient(135deg, #E8C547, #F59E0B)", color: "#0B0F1A"}} onClick={() => placeOder(cart.orderedItems,days,Sdate,Edate)}>
+                            style={{background: "linear-gradient(135deg, #E8C547, #F59E0B)", color: "#0B0F1A"}} 
+                            onClick={() => {
+                                const data = localStorage.getItem("user");
+                                if (!data) {
+                                    toast.error("Please login to continue");
+                                    navigate("/login");
+                                    return;
+                                }
+                                const currentCart = loadCart();
+                                currentCart.startingDate = Sdate;
+                                currentCart.endingDate = Edate;
+                                currentCart.days = days;
+                                localStorage.setItem("cart", JSON.stringify(currentCart));
+                                navigate("/rent");
+                            }}>
                             Proceed to Checkout
                         </button>
                     </div>

@@ -5,8 +5,11 @@ import toast from "react-hot-toast";
 import ImageSlider from "../../components/imageSlider";
 import { addcart,loadCart } from "../../utills/cart";
 import { MdOutlineShoppingCart } from "react-icons/md";
+import { FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 export default function ProductView(){
+    const navigate = useNavigate();
     const API_URL = import.meta.env.VITE_API_URL;
     const {id} = useParams();
     const [loaded,setLoaded] = useState("loading");
@@ -58,9 +61,10 @@ export default function ProductView(){
 
     return(
         <div className="min-h-screen flex items-center justify-center px-6 py-12" style={{backgroundColor: "#0B0F1A"}}>
+            
             <div className="flex flex-col md:flex-row gap-8 max-w-4xl w-full p-8 rounded-2xl"
                 style={{background: "#111827", border: "1px solid #2A3447", boxShadow: "0 8px 40px rgba(0,0,0,0.5)"}}>
-
+                <FaArrowLeft className="hover:opacity-70 cursor-pointer transition" onClick={()=>window.history.back()}/>   
                 {/* Left: Image */}
                 <div className="md:w-1/2">
                     <ImageSlider images={product.image} name={product.name} />
@@ -113,14 +117,15 @@ export default function ProductView(){
                     {/* Buttons */}
                     <div className="flex gap-3 mt-2">
                         <button
-                            className="flex-1 py-3 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90"
+                            className="flex-1 py-3 px-3 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90 active:scale-95 transition"
+                            onClick={()=>navigate('/contact')}
                             style={{background: "linear-gradient(135deg, #E8C547, #F59E0B)", color: "#0B0F1A"}}>
-                            Contact for Purchase
+                            Contact for Renting
                         </button>
                         <button
                             onClick={() => { addcart(product.key,product.price, 1); console.log(loadCart()); }}
-                            className="flex items-center justify-center gap-2 flex-1 py-3 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:border-[#E8C547]/60 hover:text-[#E8C547]"
-                            style={{border: "1px solid #2A3447", color: "#6B7A99"}}>
+                            className="flex items-center border border-[#2A3447] active:scale-95 transition justify-center gap-2 flex-1 py-3 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:text-[#F59E0B] hover:border-[#F59E0B]"
+                            >
                             <MdOutlineShoppingCart size={16}/>
                             Add to Cart
                         </button>

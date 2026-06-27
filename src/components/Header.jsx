@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { LuAudioWaveform } from "react-icons/lu";
 import { MdOutlineShoppingCart, MdOutlineAccountCircle, MdOutlineMessage } from "react-icons/md";
 import { Link, useLocation } from "react-router-dom";
@@ -6,6 +7,33 @@ import Logout from "../pages/login/logout";
 export default function Header(){
     const location = useLocation();
     const user = JSON.parse(localStorage.getItem("user"))?.user || null;
+    const [cartCount, setCartCount] = useState(0);
+
+    useEffect(() => {
+        const updateCount = () => {
+            try {
+                const cartStr = localStorage.getItem("cart");
+                if (!cartStr) {
+                    setCartCount(0);
+                    return;
+                }
+                const cart = JSON.parse(cartStr);
+                setCartCount(cart.orderedItems?.length || 0);
+            } catch (e) {
+                setCartCount(0);
+            }
+        };
+
+        updateCount();
+
+        window.addEventListener("cart-updated", updateCount);
+        window.addEventListener("storage", updateCount);
+
+        return () => {
+            window.removeEventListener("cart-updated", updateCount);
+            window.removeEventListener("storage", updateCount);
+        };
+    }, []);
 
     const navLinks = [
         { to: "/", label: "Home" },
@@ -57,7 +85,12 @@ export default function Header(){
                         <MdOutlineMessage size={22}/>
                     </Link>
                     <Link to="/cart" className="relative w-9 h-9 flex items-center justify-center rounded-lg text-[#6B7A99] hover:text-[#E8C547] hover:bg-[#E8C547]/10 transition-all duration-200">
-                        <MdOutlineShoppingCart size={22}/>
+                        <MdOutlineShoppingCart size={22} />
+                        {cartCount > 0 && (
+                            <span className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center rounded-full bg-[#E8C547] text-[#0B0F1A] text-xs font-bold">
+                                {cartCount}
+                            </span>
+                        )}
                     </Link>
                     {!user && (
                         <Link to="/login"

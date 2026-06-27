@@ -2,8 +2,9 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { MdPhone, MdEmail, MdLocationOn, MdAccessTime, MdSend } from "react-icons/md";
 import { FaFacebookF, FaInstagram, FaYoutube, FaTwitter } from "react-icons/fa";
-
+import { useNavigate } from "react-router-dom";
 export default function Contact() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -12,6 +13,7 @@ export default function Contact() {
     message: ""
   });
   const [loading, setLoading] = useState(false);
+  
 
   const handleChange = (e) => {
     setFormData({
@@ -46,7 +48,7 @@ export default function Contact() {
     {
       icon: MdPhone,
       title: "Call Us",
-      value: "+1 (555) 019-2834",
+      value: "+94770111222",
       sub: "Mon - Fri, 9am - 6pm"
     },
     {
@@ -145,11 +147,14 @@ export default function Contact() {
             </div>
           </div>
           
-
         </div>
-
+        <button
+            className="flex-1 py-3 px-3 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90 active:scale-95 transition"
+            onClick={()=>navigate('/messages')}
+            style={{background: "linear-gradient(135deg, #E8C547, #F59E0B)", color: "#0B0F1A"}}>
+            Message with Admin
+        </button>
       </div>
-      
     </div>
   );
 }

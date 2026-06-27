@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { removeFromCart, incrementQuentity, decrementQuentity } from "../utills/cart";
 import axios from "axios";
 import { FiTrash2, FiMinus, FiPlus } from "react-icons/fi";
+import { Link } from "react-router-dom";
 
 
 export default function BookingItem(props){
@@ -54,18 +55,22 @@ export default function BookingItem(props){
                     style={{background: "#111827", border: "1px solid #2A3447"}}>
 
                     {/* Image */}
-                    <img
-                        src={item.image[0] || "https://via.placeholder.com/100"}
-                        alt={item.name}
-                        className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
-                        style={{border: "1px solid #2A3447"}}
-                    />
+                    <Link to={`/product/${keys}`} className="flex-shrink-0 hover:opacity-85 transition-opacity">
+                        <img
+                            src={item.image[0] || "https://via.placeholder.com/100"}
+                            alt={item.name}
+                            className="w-24 h-24 object-cover rounded-lg"
+                            style={{border: "1px solid #2A3447"}}
+                        />
+                    </Link>
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                        <h2 className="text-sm font-bold tracking-wider uppercase text-white font-mono-display truncate">
-                            {item.name}
-                        </h2>
+                        <Link to={`/product/${keys}`} className="inline-block max-w-full hover:text-[#E8C547] transition-colors">
+                            <h2 className="text-sm font-bold tracking-wider uppercase text-white font-mono-display truncate">
+                                {item.name}
+                            </h2>
+                        </Link>
                         <p className="text-xs mt-1 line-clamp-1" style={{color: "#6B7A99"}}>
                             {item.description}
                         </p>

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { FiMessageCircle } from "react-icons/fi";
 
 export default function Bookings() {
     const API_URL = import.meta.env.VITE_API_URL;
@@ -267,6 +268,13 @@ export default function Bookings() {
 
                         {/* Modal Footer — Actions */}
                         <div className="flex gap-3 px-6 py-4" style={{ borderTop: "1px solid #2A3447" }}>
+                            <button
+                                className="flex-1 py-2.5 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+                                style={{ background: "linear-gradient(135deg, #10B981, #059669)", color: "white" }}
+                                onClick={() => handleMessage()}
+                            >
+                                <FiMessageCircle className="ml-3 absolute mt-[3px] ml-[25px] size-4 font-bold"/> Message 
+                            </button>
                             <button
                                 className="flex-1 py-2.5 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
                                 style={{ background: "linear-gradient(135deg, #10B981, #059669)", color: "white" }}

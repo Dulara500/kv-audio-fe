@@ -1,3 +1,4 @@
+import { toast } from "react-hot-toast";
 export function loadCart(){
     let cart = localStorage.getItem("cart");
     if(!cart){
@@ -24,15 +25,23 @@ export function addcart(key,price,quantity){
         }
     }
     if(!found){
-        cart.orderedItems.push({key:key,price:price, quantity:quantity});
+        try{
+            toast.success("Item added to cart");
+            cart.orderedItems.push({key:key,price:price, quantity:quantity});
+        }catch(err){
+            toast.error("Item not added to cart");
+        }
+        
     }
     localStorage.setItem("cart",JSON.stringify(cart));
+    window.dispatchEvent(new Event("cart-updated"));
 }
 
 export function removeFromCart(key){
     const cart = loadCart();
     cart.orderedItems = cart.orderedItems.filter((item) => item.key !== key);
     localStorage.setItem("cart",JSON.stringify(cart));
+    window.dispatchEvent(new Event("cart-updated"));
 }
 
 export function updateCart(days){
@@ -49,6 +58,7 @@ export function incrementQuentity(key){
         }
     }
     localStorage.setItem("cart",JSON.stringify(cart));
+    window.dispatchEvent(new Event("cart-updated"));
 }
 
 export function decrementQuentity(key){
@@ -59,6 +69,7 @@ export function decrementQuentity(key){
         }
     }
     localStorage.setItem("cart",JSON.stringify(cart));
+    window.dispatchEvent(new Event("cart-updated"));
 }
 
 export function formatDate(date) {
