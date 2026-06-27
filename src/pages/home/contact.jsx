@@ -52,7 +52,7 @@ export default function Contact() {
     {
       icon: MdEmail,
       title: "Email Us",
-      value: "support@kvaudio.com",
+      value: "support@rentec.com",
       sub: "Response within 24 hours"
     },
     {
@@ -133,7 +133,7 @@ export default function Contact() {
               <h4 className="text-xs font-semibold uppercase tracking-wider text-white">Our Location</h4>
               <div className="relative rounded-lg overflow-hidden flex-1 min-h-[250px] w-full bg-[#0B0F1A]">
                 <iframe
-                  title="KV_AUDIO Office Location Map"
+                  title="RENTEC Office Location Map"
                   src="https://www.google.com/maps/embed?81627977975171!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1m3!1d3151.835434509374!2d144.9537353153403!3d-37.81627977975171!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sus!4v1628178188610!5m2!1sen!2sus"
                   width="100%"
                   height="100%"

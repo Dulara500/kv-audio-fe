@@ -26,7 +26,7 @@ export default function Header(){
                         <LuAudioWaveform className="text-[#0B0F1A] text-lg font-bold"/>
                     </div>
                     <span className="font-bold text-lg tracking-wider text-white font-mono-display">
-                        KV<span className="text-[#E8C547]">_AUDIO</span>
+                        REN<span className="text-[#E8C547]">TEC</span>
                     </span>
                 </Link>
 

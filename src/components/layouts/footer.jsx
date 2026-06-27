@@ -17,7 +17,7 @@ export default function Footer() {
                                 <LuAudioWaveform className="text-[#0B0F1A] text-lg font-bold" />
                             </div>
                             <span className="font-bold text-lg tracking-wider text-white font-mono-display">
-                                KV<span className="text-[#E8C547]">_AUDIO</span>
+                                REN<span className="text-[#E8C547]">TEC</span>
                             </span>
                         </Link>
                         <p className="text-sm leading-relaxed" style={{ color: "#6B7A99" }}>
@@ -97,7 +97,7 @@ export default function Footer() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <MdEmail className="text-[#E8C547] flex-shrink-0" size={16} />
-                                <span>support@kvaudio.com</span>
+                                <span>support@rentec.com</span>
                             </div>
                         </div>
                     </div>
@@ -108,7 +108,7 @@ export default function Footer() {
 
                 {/* Bottom Row */}
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs" style={{ color: "#6B7A99" }}>
-                    <p>© {new Date().getFullYear()} KV_AUDIO. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} RENTEC. All rights reserved.</p>
                     <div className="flex gap-6">
                         <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
                         <a href="#" className="hover:text-white transition-colors">Terms of Service</a>

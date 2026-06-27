@@ -32,7 +32,7 @@ export default function Sidebar() {
                     <LuAudioWaveform className="text-[#0B0F1A] text-lg"/>
                 </div>
                 <span className="font-bold text-lg tracking-wider text-white font-mono-display">
-                    KV<span style={{color: "#E8C547"}}>_AUDIO</span>
+                    REN<span style={{color: "#E8C547"}}>TEC</span>
                 </span>
             </div>
 

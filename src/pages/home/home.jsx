@@ -16,7 +16,7 @@ export default function Home(){
 
             {/* Headline */}
             <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white font-mono-display mb-4 leading-none">
-                KV<span style={{color: "#E8C547"}}>_</span>AUDIO
+                REN<span style={{color: "#E8C547"}}>TEC</span>
             </h1>
             <p className="text-base md:text-lg max-w-xl leading-relaxed mb-10" style={{color: "#6B7A99"}}>
                 Professional-grade audio and stage equipment for events, studios, and productions. 

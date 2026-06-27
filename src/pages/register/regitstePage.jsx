@@ -64,7 +64,7 @@ export default function RegisterPage(){
                     </div>
                     <div className="text-center">
                         <h1 className="text-2xl font-bold tracking-widest uppercase text-white font-mono-display">
-                            KV<span style={{color: "#E8C547"}}>_AUDIO</span>
+                            REN<span style={{color: "#E8C547"}}>TEC</span>
                         </h1>
                         <p className="text-xs tracking-widest uppercase mt-1" style={{color: "#6B7A99"}}>Create your account</p>
                     </div>
