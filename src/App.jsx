@@ -32,7 +32,7 @@ function App() {
             <Route path="/*" element={<Home />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/test" element={<Test />} />
+            
             
             <Route path="/admin/*" element={<Navigate to={userAvailable ? "/" : "/"} replace />} />
             
