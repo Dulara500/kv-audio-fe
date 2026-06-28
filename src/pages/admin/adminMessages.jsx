@@ -243,6 +243,19 @@ export default function AdminMessages() {
                     .str-chat-channel {
                         height: 100% !important;
                     }
+                    /* Override library mobile styles to defer display to our manual flex/hidden layout */
+                    @media (max-width: 767px) {
+                        .str-chat__main-container,
+                        .str-chat__channel,
+                        .str-chat__chat-channel,
+                        .str-chat-channel,
+                        .str-chat__channel-list,
+                        .str-chat-channel-list {
+                            display: flex !important;
+                            height: 100% !important;
+                            width: 100% !important;
+                        }
+                    }
                 `}</style>
                 <Chat client={client} theme="str-chat__theme-dark">
                     <div className="flex h-full w-full">
