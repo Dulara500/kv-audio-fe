@@ -277,7 +277,7 @@ export default function ProductView() {
                                     className="w-full py-3 rounded-lg text-xs font-bold tracking-widest uppercase transition-all duration-200 active:scale-[0.98]"
                                     style={{ background: "linear-gradient(135deg, #E8C547, #F59E0B)", color: "#0B0F1A" }}
                                 >
-                                    Initiate Rental Sequence
+                                    Rent the Item
                                 </button>
                                 
                                 <button
