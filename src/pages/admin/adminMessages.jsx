@@ -233,15 +233,12 @@ export default function AdminMessages() {
                 }}
             >
                 <Chat client={client} theme="str-chat__theme-dark">
-                    <div className="flex h-full">
+                    <div className="flex h-full w-full">
                         {/* Channel List — Left Panel */}
                         <div
-                            className="flex-shrink-0"
-                            style={{
-                                width: "320px",
-                                borderRight: "1px solid #2A3447",
-                                height: "100%",
-                            }}
+                            className={`flex-shrink-0 border-[#2A3447] md:border-r h-full w-full md:w-[320px] ${
+                                activeChannel ? "hidden md:block" : "block"
+                            }`}
                         >
                             <div
                                 className="px-4 py-3 flex items-center gap-2"
@@ -269,7 +266,23 @@ export default function AdminMessages() {
                         </div>
 
                         {/* Active Channel — Right Panel */}
-                        <div className="flex-1 flex flex-col" style={{ minWidth: 0 }}>
+                        <div 
+                            className={`flex-1 flex flex-col h-full min-w-0 ${
+                                activeChannel ? "block" : "hidden md:flex"
+                            }`}
+                        >
+                            {/* Back button for mobile view */}
+                            {activeChannel && (
+                                <div className="md:hidden flex items-center px-4 py-2 bg-[#111827] border-b border-[#2A3447]">
+                                    <button
+                                        onClick={() => setActiveChannel(null)}
+                                        className="text-xs font-bold uppercase tracking-wider text-[#E8C547] flex items-center gap-1 hover:underline"
+                                    >
+                                        ← Back to Conversations
+                                    </button>
+                                </div>
+                            )}
+
                             <Channel channel={activeChannel || undefined}>
                                 <Window>
                                     <ChannelHeader />
