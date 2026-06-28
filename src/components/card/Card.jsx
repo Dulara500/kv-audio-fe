@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export default function Card({ ...props }) {
     return (
         
-        <div className="group relative w-[280px] rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+        <div className="group relative w-full max-w-[340px] mx-auto rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
             style={{
                 background: "#111827",
                 border: "1px solid #2A3447",

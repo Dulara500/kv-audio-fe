@@ -2,9 +2,9 @@ import { LuAudioWaveform } from "react-icons/lu";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../Auth/AuthProvider";
 import Logout from "../../pages/login/logout";
-import { MdDashboard, MdBookmarks, MdInventory, MdPeople, MdMessage } from "react-icons/md";
+import { MdDashboard, MdBookmarks, MdInventory, MdPeople, MdMessage, MdClose } from "react-icons/md";
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }) {
     const {user} = useAuth();
     const role = user?.role;
     const location = useLocation();
@@ -17,23 +17,30 @@ export default function Sidebar() {
         {id:5, name:"Messages", path:"/admin/messages", icon: MdMessage},
     ];
 
-
     if(!role){ return null; }
-   
 
     return (
         <div className="w-[280px] h-screen flex flex-col"
             style={{background: "#0B0F1A", borderRight: "1px solid #2A3447"}}>
 
-            {/* Logo */}
-            <div className="flex items-center gap-3 px-6 py-5" style={{borderBottom: "1px solid #2A3447"}}>
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{background: "linear-gradient(135deg, #E8C547, #F59E0B)"}}>
-                    <LuAudioWaveform className="text-[#0B0F1A] text-lg"/>
-                </div>
-                <span className="font-bold text-lg tracking-wider text-white font-mono-display">
-                    REN<span style={{color: "#E8C547"}}>TEC</span>
-                </span>
+            {/* Logo and close trigger */}
+            <div className="flex items-center justify-between px-6 py-5" style={{borderBottom: "1px solid #2A3447"}}>
+                <Link to="/" className="flex items-center gap-3" onClick={onClose}>
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{background: "linear-gradient(135deg, #E8C547, #F59E0B)"}}>
+                        <LuAudioWaveform className="text-[#0B0F1A] text-lg"/>
+                    </div>
+                    <span className="font-bold text-lg tracking-wider text-white font-mono-display">
+                        REN<span style={{color: "#E8C547"}}>TEC</span>
+                    </span>
+                </Link>
+                {/* Mobile Drawer Close trigger */}
+                <button 
+                    onClick={onClose}
+                    className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg border border-[#2A3447] text-[#6B7A99] hover:text-white hover:bg-white/5 transition"
+                >
+                    <MdClose size={18} />
+                </button>
             </div>
 
             {/* Role Badge */}
@@ -53,6 +60,7 @@ export default function Sidebar() {
                         <Link
                             key={item.id}
                             to={item.path}
+                            onClick={onClose}
                             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
                             style={{
                                 color: isActive ? "#E8C547" : "#6B7A99",
@@ -67,9 +75,10 @@ export default function Sidebar() {
             </nav>
 
             {/* Logout */}
-            <div className="px-4 py-4" style={{borderTop: "1px solid #2A3447"}}>
+            <div className="px-4 py-4" style={{borderTop: "1px solid #2A3447"}} onClick={onClose}>
                 <Logout/>
             </div>
         </div>
     );
 }
+
