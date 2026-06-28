@@ -9,7 +9,6 @@ import AppShell from './components/layouts/AppShell'
 import LoginPage from './pages/login/loginPage'
 import RegisterPage from './pages/register/regitstePage'
 import { Toaster } from 'react-hot-toast'
-import Test from './components/test'
 import { useAuth } from './Auth/AuthProvider'
 
 function App() {
