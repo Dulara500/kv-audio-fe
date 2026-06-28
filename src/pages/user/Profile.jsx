@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useAuth } from "../../Auth/AuthProvider";
 import { 
-    MdOutlineAccountCircle, 
     MdOutlinePhone, 
     MdOutlineLocationOn, 
     MdOutlineEmail, 
     MdOutlineShoppingBag,
     MdOutlineCalendarToday
 } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
     const { user, setUser } = useAuth();
@@ -27,6 +27,10 @@ export default function Profile() {
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [showDetails, setShowDetails] = useState(false);
     const [updating, setUpdating] = useState(false);
+    const [cancellingId, setCancellingId] = useState(null);
+    const [now, setNow] = useState(Date.now());
+    const intervalRef = useRef(null);
+    const navigate = useNavigate()
 
     // Load user data into form on mount/update
     useEffect(() => {
@@ -38,6 +42,12 @@ export default function Profile() {
             fetchMyBookings();
         }
     }, [user]);
+
+    // Tick every second so countdown timers update live
+    useEffect(() => {
+        intervalRef.current = setInterval(() => setNow(Date.now()), 1000);
+        return () => clearInterval(intervalRef.current);
+    }, []);
 
     // Fetch customer bookings
     async function fetchMyBookings() {
@@ -118,6 +128,53 @@ export default function Profile() {
     function handleViewDetails(booking) {
         setSelectedBooking(booking);
         setShowDetails(true);
+    }
+
+    const CANCEL_WINDOW_MS = 15 * 60 * 1000;
+
+    function isCancellable(booking) {
+        if (booking.status !== "pending") return false;
+        const elapsed = now - new Date(booking.orderDate).getTime();
+        return elapsed < CANCEL_WINDOW_MS;
+    }
+
+    function getTimeLeft(booking) {
+        const elapsed = now - new Date(booking.orderDate).getTime();
+        const remaining = Math.max(0, CANCEL_WINDOW_MS - elapsed);
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        return `${mins}:${secs.toString().padStart(2, "0")}`;
+    }
+
+    // Time-only check — does not depend on status
+    function isWithin15Min(booking) {
+        const elapsed = now - new Date(booking.orderDate).getTime();
+        return elapsed < CANCEL_WINDOW_MS;
+    }
+
+    async function handleCancelOrder(booking) {
+        if (!isCancellable(booking)) {
+            toast.error("Cancellation window has expired");
+            return;
+        }
+        setCancellingId(booking._id);
+        try {
+            const stored = localStorage.getItem("user");
+            if (!stored) return;
+            const token = JSON.parse(stored).token;
+            await axios.delete(`${API_URL}/api/order/${booking.orderId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success(`Order ${booking.orderId} cancelled`);
+            // Refresh bookings list
+            await fetchMyBookings();
+            // Close details modal if open for this booking
+            if (selectedBooking?._id === booking._id) setShowDetails(false);
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to cancel order");
+        } finally {
+            setCancellingId(null);
+        }
     }
 
     return (
@@ -250,7 +307,7 @@ export default function Profile() {
                             </div>
                         ) : bookings.length === 0 ? (
                             <div className="flex-1 flex flex-col items-center justify-center py-16 text-center">
-                                <p className="text-4xl mb-4">📋</p>
+                                <p className="text-4xl mb-4"></p>
                                 <p className="font-semibold text-lg text-white">No rental bookings found</p>
                                 <p className="text-sm mt-1 max-w-sm" style={{ color: "#6B7A99" }}>
                                     When you select audio equipment for rent and complete the checkout, your bookings will display here.
@@ -261,7 +318,7 @@ export default function Profile() {
                                 {bookings.map((booking) => {
                                     const s = statusColor[booking.status] || statusColor.pending;
                                     return (
-                                        <div key={booking._id} 
+                                            <div key={booking._id} 
                                             className="p-5 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all duration-200 hover:border-[#2A3447]/80"
                                             style={{ background: "#0B0F1A", border: "1px solid #2A3447" }}>
                                             
@@ -300,6 +357,32 @@ export default function Profile() {
                                                 >
                                                     View Details
                                                 </button>
+                                                {/* Cancel button — visible only within 15 min window for pending orders */}
+                                                {booking.status === "payed" && isWithin15Min(booking) && (
+                                                    <button onClick={() => navigate('/messages')} className="px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-[#111827] border border-[#2A3447] hover:border-[#E8C547] hover:bg-[#2A3447] text-white transition-all duration-200" style={{ color: "#6B7A99" }}>To cancel a paid order,<br/>please contact Admin. Within 15 Mins</button>
+                                                )}
+                                                {isCancellable(booking) && (
+                                                    <button
+                                                        disabled={cancellingId === booking._id}
+                                                        onClick={() => handleCancelOrder(booking)}
+                                                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border transition-all duration-200 disabled:opacity-50"
+                                                        style={{ background: "rgba(239,68,68,0.08)", borderColor: "rgba(239,68,68,0.35)", color: "#EF4444" }}
+                                                    >
+                                                        {cancellingId === booking._id ? (
+                                                            <span>Cancelling...</span>
+                                                        
+                                                        ) : (
+                                                            <>
+                                                            
+                                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                                                                </svg>
+                                                                Cancel
+                                                                <span className="ml-1 font-mono text-[10px] opacity-80">({getTimeLeft(booking)})</span>
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     );

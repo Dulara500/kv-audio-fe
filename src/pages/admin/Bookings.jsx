@@ -226,7 +226,7 @@ export default function Bookings() {
 
                                         {/* Total */}
                                         <td className="px-4 py-3 font-bold font-mono-display" style={{ color: "#E8C547" }}>
-                                            Rs ${booking.totalAmount?.toFixed(2)} + shippingFee(1500)
+                                            Rs {booking.totalAmount?.toFixed(2)} + shippingFee(1500)
                                         </td>
                                         {/* Payment Method */}
                                         <td className="px-4 py-3 font-bold font-mono-display" style={{ color: "#E8C547" }}>
