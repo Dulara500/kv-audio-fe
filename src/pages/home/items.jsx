@@ -38,7 +38,7 @@ export default function Items(){
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search bookings by ID, email, method, status..."
+                        placeholder="Search an item"
                         className="w-full pl-10 pr-4 py-2.5 rounded-lg text-sm text-white transition-all duration-200 focus:outline-none"
                         style={{ background: "#111827", border: "1px solid #2A3447" }}
                         onFocus={(e) => e.target.style.borderColor = "#E8C547"}
