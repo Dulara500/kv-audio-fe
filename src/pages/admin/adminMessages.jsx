@@ -3,7 +3,6 @@ import { StreamChat } from "stream-chat";
 import {
     Chat,
     Channel,
-    ChannelList,
     Window,
     ChannelHeader,
     MessageList,
@@ -11,7 +10,7 @@ import {
     Thread,
 } from "stream-chat-react";
 import "stream-chat-react/dist/css/index.css";
-import { MdSupportAgent, MdInbox } from "react-icons/md";
+import { MdSupportAgent, MdMenu, MdClose, MdInbox } from "react-icons/md";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
 
@@ -27,19 +26,28 @@ export default function AdminMessages() {
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
     const [activeChannel, setActiveChannel] = useState(null);
+    const [channels, setChannels] = useState([]);
+    const [showContacts, setShowContacts] = useState(false);
     const clientRef = useRef(null);
-    const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
-
-    useEffect(() => {
-        const handler = () => setIsDesktop(window.innerWidth >= 768);
-        window.addEventListener("resize", handler);
-        return () => window.removeEventListener("resize", handler);
-    }, []);
 
     const userData = localStorage.getItem("user");
     const stored = userData ? JSON.parse(userData) : null;
     const user = stored?.user || null;
     const token = stored?.token || null;
+
+    // Fetch the list of channels the admin is a member of
+    const fetchChannels = async (chatClient, uid) => {
+        try {
+            const result = await chatClient.queryChannels(
+                { type: "messaging", members: { $in: [uid] } },
+                { last_message_at: -1 },
+                { limit: 30, watch: true, state: true }
+            );
+            setChannels(result);
+        } catch (err) {
+            console.error("Failed to fetch channels:", err);
+        }
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -51,7 +59,6 @@ export default function AdminMessages() {
             }
 
             try {
-                // Get Stream token from backend
                 const response = await axios.post(
                     `${API_URL}/api/message/stream-token`,
                     {},
@@ -60,10 +67,8 @@ export default function AdminMessages() {
 
                 const { token: streamToken, userId: streamUserId } = response.data;
 
-                // Create a fresh client instance
                 const chatClient = new StreamChat(STREAM_API_KEY);
 
-                // Disconnect any existing user first
                 if (chatClient.userID) {
                     await chatClient.disconnectUser();
                 }
@@ -90,11 +95,21 @@ export default function AdminMessages() {
                 setUserId(streamUserId);
                 setClient(chatClient);
 
+                // Fetch channels manually (bypasses ChannelList component)
+                await fetchChannels(chatClient, streamUserId);
+
+                // If deep-linked to a specific channel, open it immediately
                 if (targetChannelId) {
                     const channel = chatClient.channel("messaging", targetChannelId);
                     await channel.watch();
                     setActiveChannel(channel);
                 }
+
+                // Refresh channel list on new messages
+                chatClient.on("message.new", () => {
+                    if (!cancelled) fetchChannels(chatClient, streamUserId);
+                });
+
             } catch (err) {
                 console.error("Stream Chat init error:", err);
                 if (!cancelled) {
@@ -118,24 +133,40 @@ export default function AdminMessages() {
         };
     }, [user?.email, token]);
 
-    // Loading state
+    // Get the display name for a channel (show other member names, not admin)
+    const getChannelName = (channel) => {
+        const members = Object.values(channel.state?.members || {});
+        const others = members.filter((m) => m.user_id !== userId);
+        if (others.length > 0) {
+            return others.map((m) => m.user?.name || m.user_id).join(", ");
+        }
+        return channel.data?.name || channel.id || "Unknown";
+    };
+
+    // Get the last message text preview
+    const getLastMessage = (channel) => {
+        const msgs = channel.state?.messages;
+        if (msgs && msgs.length > 0) {
+            const last = msgs[msgs.length - 1];
+            return last.text || (last.attachments?.length > 0 ? "📎 Attachment" : "—");
+        }
+        return "No messages yet";
+    };
+
+    // Get first letter for avatar
+    const getInitial = (channel) => {
+        return getChannelName(channel).charAt(0).toUpperCase();
+    };
+
+    // ── Loading state ──
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-[calc(100vh-120px)]">
-                <div className="flex flex-col items-center gap-4">
-                    <div
-                        className="w-12 h-12 rounded-xl flex items-center justify-center animate-pulse"
-                        style={{
-                            background: "rgba(232,197,71,0.1)",
-                            border: "1px solid rgba(232,197,71,0.2)",
-                        }}
-                    >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "calc(100vh - 120px)" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(232,197,71,0.1)", border: "1px solid rgba(232,197,71,0.2)" }}>
                         <MdSupportAgent size={24} style={{ color: "#E8C547" }} />
                     </div>
-                    <p
-                        className="text-sm font-medium tracking-wider uppercase"
-                        style={{ color: "#6B7A99" }}
-                    >
+                    <p style={{ color: "#6B7A99", fontSize: 12, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>
                         Loading messages...
                     </p>
                 </div>
@@ -143,38 +174,15 @@ export default function AdminMessages() {
         );
     }
 
-    // Error state
+    // ── Error state ──
     if (error) {
         return (
-            <div className="flex items-center justify-center h-[calc(100vh-120px)]">
-                <div className="flex flex-col items-center gap-4 text-center max-w-md">
-                    <div
-                        className="w-16 h-16 rounded-xl flex items-center justify-center"
-                        style={{
-                            background: "rgba(239,68,68,0.1)",
-                            border: "1px solid rgba(239,68,68,0.2)",
-                        }}
-                    >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "calc(100vh - 120px)" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, textAlign: "center", maxWidth: 360, padding: "0 16px" }}>
+                    <div style={{ width: 64, height: 64, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}>
                         <MdSupportAgent size={28} style={{ color: "#EF4444" }} />
                     </div>
-                    <p className="text-sm" style={{ color: "#EF4444" }}>
-                        {error}
-                    </p>
-                    <button
-                        onClick={() => {
-                            setError(null);
-                            setLoading(true);
-                            initChat();
-                        }}
-                        className="px-6 py-2 text-xs font-bold rounded-lg tracking-wide uppercase"
-                        style={{
-                            background: "rgba(232,197,71,0.1)",
-                            border: "1px solid rgba(232,197,71,0.2)",
-                            color: "#E8C547",
-                        }}
-                    >
-                        Retry
-                    </button>
+                    <p style={{ color: "#EF4444", fontSize: 13 }}>{error}</p>
                 </div>
             </div>
         );
@@ -182,150 +190,275 @@ export default function AdminMessages() {
 
     if (!client || !userId) return null;
 
-    // Channel list filters — show all messaging channels where admin is a member
-    const filters = { type: "messaging", members: { $in: [userId] } };
-    const sort = { last_message_at: -1 };
-    const options = { limit: 20 };
-
-    // Custom empty state for when no conversations exist yet
-    const EmptyStateIndicator = () => (
-        <div className="flex flex-col items-center justify-center h-full gap-4 px-6 py-12">
-            <div
-                className="w-16 h-16 rounded-xl flex items-center justify-center"
-                style={{
-                    background: "rgba(232,197,71,0.08)",
-                    border: "1px solid rgba(232,197,71,0.15)",
-                }}
-            >
-                <MdInbox size={28} style={{ color: "#E8C547" }} />
-            </div>
-            <p className="text-sm text-center" style={{ color: "#6B7A99" }}>
-                No customer conversations yet. Conversations will appear here when customers
-                send messages.
-            </p>
-        </div>
-    );
-
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            {/* Page Header */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <p style={{ color: "#E8C547", fontSize: 11, fontWeight: 700, letterSpacing: "0.3em", textTransform: "uppercase" }}>
-                    Customer Support
-                </p>
-                <h1 style={{ color: "white", fontSize: 28, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "monospace" }}>
-                    Messages<span style={{ color: "#E8C547" }}>.Inbox</span>
-                </h1>
-                <div style={{ width: 64, height: 2, background: "linear-gradient(to right, #E8C547, transparent)" }} />
-                <p style={{ color: "#6B7A99", fontSize: 14 }}>
-                    View and respond to customer support conversations in real time.
-                </p>
+        <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 80px)", background: "#0B0F1A" }}>
+
+            {/* ─── Top Header Bar ─── */}
+            <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "12px 16px",
+                background: "#111827",
+                borderBottom: "1px solid #2A3447",
+                flexShrink: 0,
+            }}>
+                {/* Contact drawer toggle */}
+                <button
+                    onClick={() => setShowContacts(!showContacts)}
+                    title="Toggle conversations"
+                    style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 8,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: showContacts ? "rgba(232,197,71,0.15)" : "rgba(255,255,255,0.04)",
+                        border: `1px solid ${showContacts ? "rgba(232,197,71,0.4)" : "#2A3447"}`,
+                        cursor: "pointer",
+                        flexShrink: 0,
+                        transition: "all 0.2s",
+                    }}
+                >
+                    {showContacts
+                        ? <MdClose size={18} style={{ color: "#E8C547" }} />
+                        : <MdMenu size={18} style={{ color: "#6B7A99" }} />
+                    }
+                </button>
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ color: "#E8C547", fontSize: 9, fontWeight: 700, letterSpacing: "0.3em", textTransform: "uppercase", margin: 0 }}>
+                        Customer Support
+                    </p>
+                    <h1 style={{ color: "white", fontSize: 16, fontWeight: 800, textTransform: "uppercase", fontFamily: "monospace", margin: 0, letterSpacing: "0.05em" }}>
+                        Messages<span style={{ color: "#E8C547" }}>.Inbox</span>
+                    </h1>
+                </div>
+
+                {/* Conversation count badge */}
+                {channels.length > 0 && (
+                    <div style={{
+                        padding: "3px 10px",
+                        background: "rgba(232,197,71,0.1)",
+                        border: "1px solid rgba(232,197,71,0.25)",
+                        borderRadius: 20,
+                    }}>
+                        <span style={{ color: "#E8C547", fontSize: 11, fontWeight: 700 }}>
+                            {channels.length} chat{channels.length !== 1 ? "s" : ""}
+                        </span>
+                    </div>
+                )}
             </div>
 
-            {/* Chat Interface — single Chat context, single connection */}
-            <div style={{
-                border: "1px solid #2A3447",
-                borderRadius: 12,
-                overflow: "hidden",
-                height: "calc(100vh - 240px)",
-                minHeight: 500,
-                display: "flex",
-            }}>
-                <Chat client={client} theme="str-chat__theme-dark">
-                    {/* force str-chat wrapper to fill its parent */}
-                    <style>{`.str-chat { height: 100% !important; width: 100% !important; }`}</style>
+            {/* ─── Main area (relative for drawer overlay) ─── */}
+            <div style={{ flex: 1, display: "flex", position: "relative", overflow: "hidden" }}>
 
-                    {/* Outer flex row */}
-                    <div style={{ display: "flex", width: "100%", height: "100%" }}>
+                {/* ── Contact Drawer Overlay ── */}
+                {showContacts && (
+                    <>
+                        {/* Dim backdrop */}
+                        <div
+                            onClick={() => setShowContacts(false)}
+                            style={{
+                                position: "absolute",
+                                inset: 0,
+                                background: "rgba(0,0,0,0.55)",
+                                zIndex: 40,
+                            }}
+                        />
 
-                        {/* ── LEFT PANEL: Channel List ── */}
-                        {/* On mobile: show only when no active channel. On desktop: always show as 320px sidebar */}
-                        {(!activeChannel || isDesktop) && (
+                        {/* Drawer panel */}
+                        <div style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            bottom: 0,
+                            width: 300,
+                            maxWidth: "85vw",
+                            background: "#111827",
+                            borderRight: "1px solid #2A3447",
+                            zIndex: 50,
+                            display: "flex",
+                            flexDirection: "column",
+                            overflow: "hidden",
+                        }}>
+                            {/* Drawer header */}
                             <div style={{
-                                width: isDesktop ? 320 : "100%",
-                                height: "100%",
-                                flexShrink: 0,
+                                padding: "14px 16px",
+                                borderBottom: "1px solid #2A3447",
                                 display: "flex",
-                                flexDirection: "column",
-                                borderRight: isDesktop ? "1px solid #2A3447" : "none",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                flexShrink: 0,
                             }}>
-                                {/* Panel header */}
-                                <div style={{
-                                    padding: "12px 16px",
-                                    background: "#111827",
-                                    borderBottom: "1px solid #2A3447",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                    flexShrink: 0,
-                                }}>
-                                    <MdSupportAgent size={18} style={{ color: "#E8C547" }} />
+                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                    <MdSupportAgent size={16} style={{ color: "#E8C547" }} />
                                     <span style={{ color: "#E8C547", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
                                         Conversations
                                     </span>
                                 </div>
-                                {/* ChannelList fills remaining height */}
-                                <div style={{ flex: 1, overflow: "hidden" }}>
-                                    <ChannelList
-                                        filters={filters}
-                                        sort={sort}
-                                        options={options}
-                                        EmptyStateIndicator={EmptyStateIndicator}
-                                        showChannelSearch
-                                        onSelect={(channel) => setActiveChannel(channel)}
-                                    />
-                                </div>
+                                <button
+                                    onClick={() => setShowContacts(false)}
+                                    style={{ background: "none", border: "none", cursor: "pointer", color: "#6B7A99", display: "flex" }}
+                                >
+                                    <MdClose size={18} />
+                                </button>
                             </div>
-                        )}
 
-                        {/* ── RIGHT PANEL: Active Chat or Desktop placeholder ── */}
-                        {/* On mobile: show only when a channel is active. On desktop: always show. */}
-                        {(activeChannel || isDesktop) && (
-                            <div style={{ flex: 1, height: "100%", display: "flex", flexDirection: "column", minWidth: 0 }}>
-                                {/* Mobile back-button bar */}
-                                {activeChannel && !isDesktop && (
-                                    <div style={{
-                                        padding: "8px 16px",
-                                        background: "#111827",
-                                        borderBottom: "1px solid #2A3447",
-                                        flexShrink: 0,
-                                    }}>
-                                        <button
-                                            onClick={() => setActiveChannel(null)}
-                                            style={{ color: "#E8C547", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", background: "none", border: "none", cursor: "pointer" }}
-                                        >
-                                            ← Back to Conversations
-                                        </button>
-                                    </div>
-                                )}
-
-                                {/* Active channel chat */}
-                                {activeChannel ? (
-                                    <div style={{ flex: 1, overflow: "hidden" }}>
-                                        <Channel channel={activeChannel}>
-                                            <Window>
-                                                <ChannelHeader />
-                                                <MessageList />
-                                                <MessageComposer />
-                                            </Window>
-                                            <Thread />
-                                        </Channel>
+                            {/* Channel list */}
+                            <div style={{ flex: 1, overflowY: "auto" }}>
+                                {channels.length === 0 ? (
+                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 16px", gap: 12 }}>
+                                        <MdInbox size={32} style={{ color: "#2A3447" }} />
+                                        <p style={{ color: "#6B7A99", fontSize: 13, textAlign: "center" }}>
+                                            No conversations yet. They will appear here when customers send messages.
+                                        </p>
                                     </div>
                                 ) : (
-                                    /* Desktop placeholder when nothing selected */
-                                    <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "#0B0F1A" }}>
-                                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, textAlign: "center", padding: "0 32px" }}>
-                                            <div style={{ width: 64, height: 64, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(232,197,71,0.08)", border: "1px solid rgba(232,197,71,0.15)" }}>
-                                                <MdSupportAgent size={28} style={{ color: "#E8C547" }} />
-                                            </div>
-                                            <p style={{ color: "#6B7A99", fontSize: 14 }}>Select a conversation to start responding</p>
-                                        </div>
-                                    </div>
+                                    channels.map((ch) => {
+                                        const isActive = activeChannel?.id === ch.id;
+                                        const unread = ch.state?.unreadCount || 0;
+                                        return (
+                                            <button
+                                                key={ch.id}
+                                                onClick={() => {
+                                                    setActiveChannel(ch);
+                                                    setShowContacts(false);
+                                                }}
+                                                style={{
+                                                    width: "100%",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 12,
+                                                    padding: "12px 16px",
+                                                    background: isActive ? "rgba(232,197,71,0.08)" : "transparent",
+                                                    borderLeft: isActive ? "3px solid #E8C547" : "3px solid transparent",
+                                                    borderTop: "none",
+                                                    borderRight: "none",
+                                                    borderBottom: "1px solid #1A2233",
+                                                    cursor: "pointer",
+                                                    textAlign: "left",
+                                                    transition: "background 0.15s",
+                                                }}
+                                            >
+                                                {/* Avatar */}
+                                                <div style={{
+                                                    width: 40,
+                                                    height: 40,
+                                                    borderRadius: "50%",
+                                                    background: isActive ? "rgba(232,197,71,0.2)" : "rgba(232,197,71,0.08)",
+                                                    border: `1px solid ${isActive ? "rgba(232,197,71,0.4)" : "rgba(232,197,71,0.15)"}`,
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    flexShrink: 0,
+                                                }}>
+                                                    <span style={{ color: "#E8C547", fontWeight: 700, fontSize: 15 }}>
+                                                        {getInitial(ch)}
+                                                    </span>
+                                                </div>
+
+                                                {/* Name + last message */}
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <p style={{
+                                                        color: "white",
+                                                        fontSize: 13,
+                                                        fontWeight: unread > 0 ? 700 : 500,
+                                                        overflow: "hidden",
+                                                        textOverflow: "ellipsis",
+                                                        whiteSpace: "nowrap",
+                                                        margin: 0,
+                                                    }}>
+                                                        {getChannelName(ch)}
+                                                    </p>
+                                                    <p style={{
+                                                        color: "#6B7A99",
+                                                        fontSize: 11,
+                                                        overflow: "hidden",
+                                                        textOverflow: "ellipsis",
+                                                        whiteSpace: "nowrap",
+                                                        marginTop: 2,
+                                                        margin: "2px 0 0 0",
+                                                    }}>
+                                                        {getLastMessage(ch)}
+                                                    </p>
+                                                </div>
+
+                                                {/* Unread badge */}
+                                                {unread > 0 && (
+                                                    <div style={{
+                                                        width: 20,
+                                                        height: 20,
+                                                        borderRadius: "50%",
+                                                        background: "#E8C547",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        flexShrink: 0,
+                                                    }}>
+                                                        <span style={{ color: "#0B0F1A", fontSize: 10, fontWeight: 700 }}>
+                                                            {unread > 9 ? "9+" : unread}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </button>
+                                        );
+                                    })
                                 )}
                             </div>
-                        )}
-                    </div>
-                </Chat>
+                        </div>
+                    </>
+                )}
+
+                {/* ── Chat Window ── */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", height: "100%", minWidth: 0 }}>
+                    {activeChannel ? (
+                        <Chat client={client} theme="str-chat__theme-dark">
+                            <style>{`.str-chat { height: 100% !important; width: 100% !important; }`}</style>
+                            <Channel channel={activeChannel}>
+                                <Window>
+                                    <ChannelHeader />
+                                    <MessageList />
+                                    <MessageComposer />
+                                </Window>
+                                <Thread />
+                            </Channel>
+                        </Chat>
+                    ) : (
+                        /* Placeholder when no channel selected */
+                        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, textAlign: "center", padding: "0 32px" }}>
+                                <div style={{ width: 72, height: 72, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(232,197,71,0.08)", border: "1px solid rgba(232,197,71,0.15)" }}>
+                                    <MdSupportAgent size={32} style={{ color: "#E8C547" }} />
+                                </div>
+                                <div>
+                                    <p style={{ color: "white", fontSize: 15, fontWeight: 600, margin: "0 0 6px" }}>No conversation selected</p>
+                                    <p style={{ color: "#6B7A99", fontSize: 13, margin: 0 }}>
+                                        Click the <strong style={{ color: "#E8C547" }}>☰</strong> icon above to browse conversations
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setShowContacts(true)}
+                                    style={{
+                                        padding: "10px 22px",
+                                        background: "rgba(232,197,71,0.1)",
+                                        border: "1px solid rgba(232,197,71,0.35)",
+                                        borderRadius: 8,
+                                        color: "#E8C547",
+                                        fontSize: 11,
+                                        fontWeight: 700,
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.1em",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    Browse Conversations
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
