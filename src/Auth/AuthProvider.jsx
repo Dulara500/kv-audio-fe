@@ -17,26 +17,22 @@ function isTokenExpired(token) {
 }
 
 export default function AuthProvider({children}){
-    const [user,setUser] = useState(null);
-
-    // Initial load: parse user from localStorage if it's not expired
-    useEffect(() => {
+    const [user, setUser] = useState(() => {
         const stored = localStorage.getItem("user");
         if (stored) {
             try {
                 const parsed = JSON.parse(stored);
                 if (parsed.token && !isTokenExpired(parsed.token)) {
-                    setUser(parsed.user);
+                    return parsed.user;
                 } else {
                     localStorage.removeItem("user");
-                    setUser(null);
                 }
             } catch (e) {
                 localStorage.removeItem("user");
-                setUser(null);
             }
         }
-    }, []);
+        return null;
+    });
 
     // Set a timer to automatically log out when token expires
     useEffect(() => {
