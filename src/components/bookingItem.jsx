@@ -51,35 +51,41 @@ export default function BookingItem(props){
             )}
 
             {status === "success" && item && (
-                <div className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200 hover:border-[#E8C547]/30"
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl transition-all duration-200 hover:border-[#E8C547]/30"
                     style={{background: "#111827", border: "1px solid #2A3447"}}>
 
-                    {/* Image */}
-                    <Link to={`/product/${keys}`} className="flex-shrink-0 hover:opacity-85 transition-opacity">
-                        <img
-                            src={item.image[0] || "https://via.placeholder.com/100"}
-                            alt={item.name}
-                            className="w-24 h-24 object-cover rounded-lg"
-                            style={{border: "1px solid #2A3447"}}
-                        />
-                    </Link>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                        <Link to={`/product/${keys}`} className="inline-block max-w-full hover:text-[#E8C547] transition-colors">
-                            <h2 className="text-sm font-bold tracking-wider uppercase text-white font-mono-display truncate">
-                                {item.name}
-                            </h2>
+                    {/* Image & Main Info Wrapper */}
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                        {/* Image */}
+                        <Link to={`/product/${keys}`} className="flex-shrink-0 hover:opacity-85 transition-opacity">
+                            <img
+                                src={item.image[0] || "https://via.placeholder.com/100"}
+                                alt={item.name}
+                                className="w-16 h-16 sm:w-24 sm:h-24 object-cover rounded-lg"
+                                style={{border: "1px solid #2A3447"}}
+                            />
                         </Link>
-                        <p className="text-xs mt-1 line-clamp-1" style={{color: "#6B7A99"}}>
-                            {item.description}
-                        </p>
-                        <p className="text-sm mt-1 font-semibold" style={{color: "#E8C547"}}>
-                            Rs. {item.price} / day
-                        </p>
 
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                            <Link to={`/product/${keys}`} className="inline-block max-w-full hover:text-[#E8C547] transition-colors">
+                                <h2 className="text-sm font-bold tracking-wider uppercase text-white font-mono-display truncate">
+                                    {item.name}
+                                </h2>
+                            </Link>
+                            <p className="text-xs mt-1 line-clamp-1" style={{color: "#6B7A99"}}>
+                                {item.description}
+                            </p>
+                            <p className="text-sm mt-1 font-semibold" style={{color: "#E8C547"}}>
+                                Rs. {item.price} / day
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Quantity controls and totals/remove wrapper */}
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-4 border-t border-[#2A3447]/60 sm:border-t-0 pt-3 sm:pt-0 mt-2 sm:mt-0">
                         {/* Qty controls */}
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-2">
                             <button
                                 onClick={() => { decrementQuentity(keys); setQuantity(q => q - 1); refresh(); }}
                                 className="w-7 h-7 rounded-md flex items-center justify-center text-white transition-all duration-150 hover:bg-[#E8C547] hover:text-[#0B0F1A]"
@@ -94,20 +100,20 @@ export default function BookingItem(props){
                                 <FiPlus size={12}/>
                             </button>
                         </div>
-                    </div>
 
-                    {/* Right: Total + Remove */}
-                    <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                        <p className="text-base font-bold font-mono-display" style={{color: "#E8C547"}}>
-                            Rs. {(item.price * quantity).toFixed(2)}
-                        </p>
-                        <button
-                            onClick={() => { removeFromCart(keys); refresh(); }}
-                            className="flex items-center gap-1.5 text-xs px-2 py-1.5 rounded-md transition-all duration-200 hover:bg-red-500/20"
-                            style={{color: "#EF4444", border: "1px solid #7F1D1D"}}>
-                            <FiTrash2 size={12}/>
-                            Remove
-                        </button>
+                        {/* Right: Total + Remove */}
+                        <div className="flex items-center sm:items-end gap-3 sm:flex-col">
+                            <p className="text-base font-bold font-mono-display" style={{color: "#E8C547"}}>
+                                Rs. {(item.price * quantity).toFixed(2)}
+                            </p>
+                            <button
+                                onClick={() => { removeFromCart(keys); refresh(); }}
+                                className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md transition-all duration-200 hover:bg-red-500/20"
+                                style={{color: "#EF4444", border: "1px solid #7F1D1D"}}>
+                                <FiTrash2 size={12}/>
+                                Remove
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

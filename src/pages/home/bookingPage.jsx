@@ -129,55 +129,56 @@ export default function BookingPage(){
                     <Link to="/items" className="text-xs font-semibold tracking-[0.3em] uppercase" style={{color: "#E8C547"}}>Add more items</Link>
 
                     {/* Order Summary */}
-                    <div className="mt-8 p-5 rounded-xl" style={{background: "#111827", border: "1px solid #2A3447"}}>
+                    <div className="mt-8 p-4 md:p-6 rounded-xl" style={{background: "#111827", border: "1px solid #2A3447"}}>
                         <h2 className="text-sm font-semibold tracking-widest uppercase mb-4" style={{color: "#6B7A99"}}>Order Summary</h2>
-                        <div className="flex justify-between items-center pt-3" style={{borderTop: "1px solid #2A3447"}}>
-                            <div className="flex gap-2">
-                                <label style={{ color: "#6B7A99" }}>Starting Date</label>
-                                <input
-                                  type="date"
-                                  value={Sdate}
-                                  min={formatDate(today)}
-                                  max={formatDate(maxStart)}
-                                  className="p-2 mt-2 rounded-md w-full"
-                                  style={{
-                                    backgroundColor: "#1A2233",
-                                    border: "1px solid #2A3447",
-                                  }}
-                                  onChange={(e) => {
-                                    const newStart = e.target.value;
-                                    setSdate(newStart);
-                                    // If current end date is not after the new start, push it forward
-                                    if (Edate <= newStart) {
-                                        setEdate(addDays(newStart, 1));
-                                    }
-                                  }}
-                                />
-                                <label style={{ color: "#6B7A99" }}>Ending Date</label>
-                                <input
-                                  type="date"
-                                  value={Edate || addDays(Sdate, 1)}
-                                  min={addDays(Sdate, 1)}
-                                  max={formatDate(maxEnd)}
-                                  className="p-2 mt-2 rounded-md w-full"
-                                  style={{
-                                    backgroundColor: "#1A2233",
-                                    border: "1px solid #2A3447",
-                                  }}
-                                  onChange={(e) => setEdate(e.target.value)}
-                                />
-                            </div>
-                            <div className="flex flex-col">
-                                <div className="flex justify-between items-center">
-                                    <span style={{ color: "#6B7A99" }}>Total Days: </span>
-                                    <span className="text-white font-semibold ml-1">{days} days</span>
+                        <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-6 pt-3" style={{borderTop: "1px solid #2A3447"}}>
+                            {/* Date Fields Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs font-semibold tracking-wide uppercase" style={{ color: "#6B7A99" }}>Starting Date</label>
+                                    <input
+                                      type="date"
+                                      value={Sdate}
+                                      min={formatDate(today)}
+                                      max={formatDate(maxStart)}
+                                      className="p-2.5 rounded-lg text-sm text-white w-full bg-[#1A2233] border border-[#2A3447] focus:outline-none focus:border-[#E8C547]"
+                                      onChange={(e) => {
+                                        const newStart = e.target.value;
+                                        setSdate(newStart);
+                                        // If current end date is not after the new start, push it forward
+                                        if (Edate <= newStart) {
+                                            setEdate(addDays(newStart, 1));
+                                        }
+                                      }}
+                                    />
                                 </div>
-                                <span className="text-white font-semibold">Estimated Total: </span>
-                                <span className="text-xl font-bold font-mono-display" style={{color: "#E8C547"}}>
-                                    Rs. {Etotal.toFixed(2)}
-                                </span>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs font-semibold tracking-wide uppercase" style={{ color: "#6B7A99" }}>Ending Date</label>
+                                    <input
+                                      type="date"
+                                      value={Edate || addDays(Sdate, 1)}
+                                      min={addDays(Sdate, 1)}
+                                      max={formatDate(maxEnd)}
+                                      className="p-2.5 rounded-lg text-sm text-white w-full bg-[#1A2233] border border-[#2A3447] focus:outline-none focus:border-[#E8C547]"
+                                      onChange={(e) => setEdate(e.target.value)}
+                                    />
+                                </div>
                             </div>
+                            
+                            {/* Totals Section */}
+                            <div className="flex flex-col gap-1.5 border-t border-[#2A3447] lg:border-t-0 pt-4 lg:pt-0 justify-center">
+                                <div className="flex justify-between lg:justify-end items-center gap-2">
+                                    <span className="text-xs" style={{ color: "#6B7A99" }}>Total Days:</span>
+                                    <span className="text-sm font-semibold text-white">{days} day{days !== 1 ? "s" : ""}</span>
+                                </div>
+                                <div className="flex justify-between lg:justify-end lg:flex-col items-center lg:items-end gap-1">
+                                    <span className="text-xs" style={{ color: "#6B7A99" }}>Estimated Total:</span>
+                                    <span className="text-2xl font-bold font-mono-display text-[#E8C547] mt-0.5">
+                                        Rs. {Etotal.toFixed(2)}
+                                    </span>
+                                </div>
                             </div>
+                        </div>
                         <button
                             className="w-full mt-4 py-3 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90"
                             style={{background: "linear-gradient(135deg, #E8C547, #F59E0B)", color: "#0B0F1A"}} 
