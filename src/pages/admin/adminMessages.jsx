@@ -232,6 +232,18 @@ export default function AdminMessages() {
                     minHeight: "500px",
                 }}
             >
+                {/* Local style overrides to prevent Stream Chat wrapper collapse on mobile */}
+                <style>{`
+                    .str-chat {
+                        height: 100% !important;
+                        width: 100% !important;
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    .str-chat-channel {
+                        height: 100% !important;
+                    }
+                `}</style>
                 <Chat client={client} theme="str-chat__theme-dark">
                     <div className="flex h-full w-full">
                         {/* Channel List — Left Panel */}
