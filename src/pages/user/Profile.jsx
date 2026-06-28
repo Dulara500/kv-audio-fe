@@ -162,7 +162,7 @@ export default function Profile() {
             const stored = localStorage.getItem("user");
             if (!stored) return;
             const token = JSON.parse(stored).token;
-            await axios.delete(`${API_URL}/api/order/${booking.orderId}`, {
+            await axios.put(`${API_URL}/api/order/${booking.orderId}/cancel`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success(`Order ${booking.orderId} cancelled`);

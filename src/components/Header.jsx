@@ -1,22 +1,36 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { LuAudioWaveform } from "react-icons/lu";
 import { MdOutlineShoppingCart, MdOutlineAccountCircle, MdOutlineMessage } from "react-icons/md";
 import { Link, useLocation } from "react-router-dom";
 import Logout from "../pages/login/logout";
+import { StreamChat } from "stream-chat";
+import axios from "axios";
+
+const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Header(){
     const location = useLocation();
     const user = JSON.parse(localStorage.getItem("user"))?.user || null;
+    const token = JSON.parse(localStorage.getItem("user"))?.token || null;
     const [cartCount, setCartCount] = useState(0);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const chatClientRef = useRef(null);
+    const isOnMessages = location.pathname === "/messages";
 
+    // Clear unread badge when user navigates to the messages page
+    useEffect(() => {
+        if (isOnMessages) {
+            setUnreadCount(0);
+        }
+    }, [isOnMessages]);
+
+    // Cart count listener
     useEffect(() => {
         const updateCount = () => {
             try {
                 const cartStr = localStorage.getItem("cart");
-                if (!cartStr) {
-                    setCartCount(0);
-                    return;
-                }
+                if (!cartStr) { setCartCount(0); return; }
                 const cart = JSON.parse(cartStr);
                 setCartCount(cart.orderedItems?.length || 0);
             } catch (e) {
@@ -25,15 +39,79 @@ export default function Header(){
         };
 
         updateCount();
-
         window.addEventListener("cart-updated", updateCount);
         window.addEventListener("storage", updateCount);
-
         return () => {
             window.removeEventListener("cart-updated", updateCount);
             window.removeEventListener("storage", updateCount);
         };
     }, []);
+
+    // Connect a background Stream Chat client to listen for new messages
+    useEffect(() => {
+        if (!user || !token) return;
+
+        let cancelled = false;
+
+        async function connectBackground() {
+            try {
+                const res = await axios.post(
+                    `${API_URL}/api/message/stream-token`,
+                    {},
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                const { token: streamToken, userId, channelId } = res.data;
+
+                if (cancelled) return;
+
+                const client = new StreamChat(STREAM_API_KEY);
+                if (client.userID) await client.disconnectUser();
+
+                await client.connectUser(
+                    {
+                        id: userId,
+                        name: user.firstName ? `${user.firstName} ${user.lastName}` : user.email,
+                    },
+                    streamToken
+                );
+
+                if (cancelled) { await client.disconnectUser(); return; }
+
+                const ch = client.channel("messaging", channelId);
+                await ch.watch();
+
+                // Set initial unread from Stream's stored state
+                if (!isOnMessages && ch.countUnread() > 0) {
+                    setUnreadCount(ch.countUnread());
+                }
+
+                // Listen for incoming messages that are NOT from the current user
+                const handleNewMessage = (event) => {
+                    if (event.user?.id !== userId && !window.location.pathname.includes("/messages")) {
+                        setUnreadCount(prev => prev + 1);
+                    }
+                };
+
+                client.on("message.new", handleNewMessage);
+                chatClientRef.current = { client, handleNewMessage };
+            } catch (err) {
+                console.error("Header chat init error:", err);
+            }
+        }
+
+        connectBackground();
+
+        return () => {
+            cancelled = true;
+            if (chatClientRef.current) {
+                const { client, handleNewMessage } = chatClientRef.current;
+                client.off("message.new", handleNewMessage);
+                client.disconnectUser().catch(() => {});
+                chatClientRef.current = null;
+            }
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.email]);
 
     const navLinks = [
         { to: "/", label: "Home" },
@@ -81,8 +159,15 @@ export default function Header(){
                 {/* Right Actions */}
                 <div className="flex items-center gap-3">
                     
+                    {/* Message icon with unread badge */}
                     <Link to="/messages" className="relative w-9 h-9 flex items-center justify-center rounded-lg text-[#6B7A99] hover:text-[#E8C547] hover:bg-[#E8C547]/10 transition-all duration-200" title="Message Admin">
                         <MdOutlineMessage size={22}/>
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 flex items-center justify-center rounded-full text-[10px] font-bold animate-pulse"
+                                style={{ background: "#EF4444", color: "white" }}>
+                                {unreadCount > 9 ? "9+" : unreadCount}
+                            </span>
+                        )}
                     </Link>
                     <Link to="/cart" className="relative w-9 h-9 flex items-center justify-center rounded-lg text-[#6B7A99] hover:text-[#E8C547] hover:bg-[#E8C547]/10 transition-all duration-200">
                         <MdOutlineShoppingCart size={22} />

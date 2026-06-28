@@ -6,6 +6,7 @@ export default function Items(){
     const API_URL = import.meta.env.VITE_API_URL;
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState("loading");
+    const [search, setSearch] = useState("");
 
     useEffect(() => {
         axios.get(`${API_URL}/api/products`).then((response) => {
@@ -16,6 +17,11 @@ export default function Items(){
             setLoading("error");
         });
     }, []);
+
+    const filtered = items.filter((i)=>{
+        const q= search.toLowerCase();
+        return (i.name.toLowerCase().includes(q) || i.description.toLowerCase().includes(q) || i.category.toLowerCase().includes(q));
+    })
 
     return(
         <div className="min-h-screen px-6 py-10" style={{backgroundColor: "#0B0F1A"}}>
@@ -48,10 +54,22 @@ export default function Items(){
                 </div>
             )}
 
+            <div className="relative flex-1 max-w-md mb-6">
+                    <input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search bookings by ID, email, method, status..."
+                        className="w-full pl-10 pr-4 py-2.5 rounded-lg text-sm text-white transition-all duration-200 focus:outline-none"
+                        style={{ background: "#111827", border: "1px solid #2A3447" }}
+                        onFocus={(e) => e.target.style.borderColor = "#E8C547"}
+                        onBlur={(e) => e.target.style.borderColor = "#2A3447"}
+                    />
+                </div>
+
             {/* Items Grid */}
             {loading === "success" && (
                 <div className="flex flex-wrap gap-5 justify-start">
-                    {items.map((item) => (
+                    {filtered.map((item) => (
                         <Card
                             key={item.key}
                             id={item.key}

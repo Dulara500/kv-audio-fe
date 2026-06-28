@@ -268,7 +268,19 @@ export default function Messages() {
                         <Chat client={client} theme="str-chat__theme-dark">
                             <Channel channel={channel}>
                                 <Window>
-                                    <ChannelHeader />
+                                    {/* Custom Channel Header showing Admin Support instead of Customer Name */}
+                                    <div className="flex items-center gap-3 px-5 py-3 border-b border-[#2A3447]" style={{ background: "#111827" }}>
+                                        <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#E8C547]/10 border border-[#E8C547]/20 text-[#E8C547]">
+                                            <MdSupportAgent size={20} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xs font-bold text-white uppercase tracking-wider">Support Admin</h3>
+                                            <p className="text-[9px] text-green-500 font-bold uppercase tracking-wider flex items-center gap-1.5 mt-0.5">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                                Online
+                                            </p>
+                                        </div>
+                                    </div>
                                     <MessageList />
                                     <MessageComposer />
                                 </Window>

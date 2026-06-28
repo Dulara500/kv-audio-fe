@@ -41,13 +41,26 @@ export default function Bookings() {
         }
     }
 
-    function approveBooking() {
-        toast.error("Order approval endpoint not implemented in backend");
+    async function updateOrderStatus(status) {
+        try {
+            const data = localStorage.getItem("user");
+            const token = JSON.parse(data).token;
+            await axios.put(`${API_URL}/api/order/${seletedBooking.orderId}/status`, {
+                status
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success(`Order marked as "${status}" successfully`);
+            setShowDetails(false);
+            getBookings();
+        } catch (error) {
+            toast.error(error.response?.data?.message || `Failed to update status to ${status}`);
+        }
     }
 
-    function rejectBooking() {
-        toast.error("Order rejection endpoint not implemented in backend");
-    }
+    function approveBooking() { updateOrderStatus("approved"); }
+    function rejectBooking()  { updateOrderStatus("rejected");  }
+    function markPayed()      { updateOrderStatus("payed");     }
 
     async function getBookings() {
         try {
@@ -100,6 +113,8 @@ export default function Bookings() {
         pending:  { color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.3)"  },
         payed: { color: "#22C55E", bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.3)"   },
         cancelled: { color: "#EF4444", bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.3)"   },
+        approved: { color: "#22C55E", bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.3)"   },
+        rejected: { color: "#EF4444", bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.3)"   },
     };
 
     const filteredBookings = bookings.filter((u)=>{
@@ -349,36 +364,59 @@ export default function Bookings() {
                             </div>
                         </div>
 
-                        {/* Modal Footer — Actions */}
-                        <div className="flex gap-3 px-6 py-4" style={{ borderTop: "1px solid #2A3447" }}>
-                            <button
-                                className="flex-1 py-2.5 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
-                                style={{ background: "linear-gradient(135deg, #10B981, #059669)", color: "white" }}
-                                onClick={() => handleMessage()}
-                            >
-                                <FiMessageCircle className="ml-3 absolute mt-[3px] ml-[25px] size-4 font-bold"/> Message 
-                            </button>
-                            <button
-                                className="flex-1 py-2.5 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
-                                style={{ background: "linear-gradient(135deg, #10B981, #059669)", color: "white" }}
-                                onClick={() => approveBooking()}
-                            >
-                                ✓ Approve
-                            </button>
-                            <button
-                                className="flex-1 py-2.5 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
-                                style={{ background: "linear-gradient(135deg, #EF4444, #DC2626)", color: "white" }}
-                                onClick={() => rejectBooking()}
-                            >
-                                ✕ Reject
-                            </button>
-                            <button
-                                className="px-5 py-2.5 rounded-lg text-sm font-semibold tracking-wide uppercase transition-all duration-200 hover:bg-white/10"
-                                style={{ border: "1px solid #2A3447", color: "#6B7A99" }}
-                                onClick={() => setShowDetails(false)}
-                            >
-                                Close
-                            </button>
+                        {/* Modal Footer — Status Actions */}
+                        <div className="px-6 py-4 flex flex-col gap-3" style={{ borderTop: "1px solid #2A3447" }}>
+                            <div className="flex items-center justify-between mb-1">
+                                <p className="text-xs font-semibold tracking-[0.3em] uppercase" style={{ color: "#6B7A99" }}>Update Status</p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {/* Mark as Payed */}
+                                {seletedBooking.status !== "payed" && seletedBooking.status !== "approved" && seletedBooking.status !== "rejected" && seletedBooking.status !== "cancelled" && (
+                                    <button
+                                        onClick={markPayed}
+                                        className="flex-1 min-w-[120px] py-2.5 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+                                        style={{ background: "linear-gradient(135deg, #22C55E, #16A34A)", color: "white" }}
+                                    >
+                                        💳 Mark Payed
+                                    </button>
+                                )}
+                                {/* Approve */}
+                                {seletedBooking.status !== "approved" && seletedBooking.status !== "rejected" && seletedBooking.status !== "cancelled" && (
+                                    <button
+                                        onClick={approveBooking}
+                                        className="flex-1 min-w-[120px] py-2.5 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+                                        style={{ background: "linear-gradient(135deg, #3B82F6, #2563EB)", color: "white" }}
+                                    >
+                                        ✓ Approve
+                                    </button>
+                                )}
+                                {/* Reject */}
+                                {seletedBooking.status !== "rejected" && seletedBooking.status !== "cancelled" && (
+                                    <button
+                                        onClick={rejectBooking}
+                                        className="flex-1 min-w-[120px] py-2.5 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+                                        style={{ background: "linear-gradient(135deg, #EF4444, #DC2626)", color: "white" }}
+                                    >
+                                        ✕ Reject
+                                    </button>
+                                )}
+                            </div>
+                            <div className="flex gap-2 mt-1">
+                                <button
+                                    className="flex-1 py-2.5 rounded-lg text-sm font-bold tracking-wide uppercase transition-all duration-200 hover:opacity-90"
+                                    style={{ background: "linear-gradient(135deg, #10B981, #059669)", color: "white" }}
+                                    onClick={() => handleMessage()}
+                                >
+                                    <FiMessageCircle className="inline mr-2 mb-0.5" size={14}/> Message Customer
+                                </button>
+                                <button
+                                    className="px-5 py-2.5 rounded-lg text-sm font-semibold tracking-wide uppercase transition-all duration-200 hover:bg-white/10"
+                                    style={{ border: "1px solid #2A3447", color: "#6B7A99" }}
+                                    onClick={() => setShowDetails(false)}
+                                >
+                                    Close
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

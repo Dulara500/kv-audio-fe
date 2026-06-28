@@ -124,7 +124,7 @@ export default function RentItems() {
                 }
             );
 
-            toast.success("Rental order placed successfully!");
+            toast.success("Rental order placed successfully! Go to profile to see order details");
             // Clear cart
             localStorage.removeItem("cart");
             window.dispatchEvent(new Event("cart-updated"));
