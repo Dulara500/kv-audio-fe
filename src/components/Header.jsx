@@ -99,10 +99,10 @@ export default function Header(){
                         </Link>
                     )}
                     {user && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{border: "1px solid #2A3447"}}>
+                        <Link to="/profile" className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:border-[#E8C547] transition-all duration-200" style={{border: "1px solid #2A3447"}} title="View Profile">
                             <MdOutlineAccountCircle size={18} style={{color: "#6B7A99"}}/>
                             <span className="text-sm font-medium text-white">{user?.firstName || "User"}</span>
-                        </div>
+                        </Link>
                     )}
                     {user && (
                         <Logout/>

@@ -52,6 +52,7 @@ export default function RentItems() {
     });
 
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+    const [status, setStatus] = useState("pending");
 
     if (!user || !cart) {
         return (
@@ -115,7 +116,8 @@ export default function RentItems() {
                     startingDate: cart.startingDate,
                     endingDate: cart.endingDate,
                     shippingAddress: addresses[selectedAddressIndex],
-                    paymentMethod: paymentMethod === "cod" ? "Cash/Rent on Delivery" : paymentMethod === "card" ? "Credit Card" : "Bank Transfer"
+                    paymentMethod: paymentMethod === "cod" ? "Cash/Rent on Delivery" : paymentMethod === "card" ? "Credit Card" : "Bank Transfer",
+                    status:status
                 },
                 {
                     headers: { Authorization: `Bearer ${token}` }
@@ -238,7 +240,7 @@ export default function RentItems() {
 
                             <div className="grid grid-cols-3 gap-3 mb-6">
                                 <div
-                                    onClick={() => setPaymentMethod("cod")}
+                                    onClick={() => {setPaymentMethod("cod");setStatus("pending")}}
                                     className={`p-4 rounded-xl cursor-pointer flex flex-col items-center justify-center gap-2 border text-center transition-all ${
                                         paymentMethod === "cod"
                                             ? "border-[#E8C547] bg-[#E8C547]/5 text-white"
@@ -249,7 +251,7 @@ export default function RentItems() {
                                     <span className="text-xs font-semibold uppercase tracking-wider">Rent on Delivery</span>
                                 </div>
                                 <div
-                                    onClick={() => setPaymentMethod("card")}
+                                    onClick={() => {setPaymentMethod("card");setStatus("payed");}}
                                     className={`p-4 rounded-xl cursor-pointer flex flex-col items-center justify-center gap-2 border text-center transition-all ${
                                         paymentMethod === "card"
                                             ? "border-[#E8C547] bg-[#E8C547]/5 text-white"
@@ -260,7 +262,7 @@ export default function RentItems() {
                                     <span className="text-xs font-semibold uppercase tracking-wider">Credit Card</span>
                                 </div>
                                 <div
-                                    onClick={() => setPaymentMethod("transfer")}
+                                    onClick={() => {setPaymentMethod("transfer");setStatus("pending")}}
                                     className={`p-4 rounded-xl cursor-pointer flex flex-col items-center justify-center gap-2 border text-center transition-all ${
                                         paymentMethod === "transfer"
                                             ? "border-[#E8C547] bg-[#E8C547]/5 text-white"

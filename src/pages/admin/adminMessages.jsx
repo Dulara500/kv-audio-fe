@@ -13,15 +13,20 @@ import {
 import "stream-chat-react/dist/css/index.css";
 import { MdSupportAgent, MdInbox } from "react-icons/md";
 import axios from "axios";
+import { useSearchParams } from "react-router-dom";
 
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function AdminMessages() {
+    const [searchParams] = useSearchParams();
+    const targetChannelId = searchParams.get("channelId");
+
     const [client, setClient] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
+    const [activeChannel, setActiveChannel] = useState(null);
     const clientRef = useRef(null);
 
     const userData = localStorage.getItem("user");
@@ -77,6 +82,12 @@ export default function AdminMessages() {
                 clientRef.current = chatClient;
                 setUserId(streamUserId);
                 setClient(chatClient);
+
+                if (targetChannelId) {
+                    const channel = chatClient.channel("messaging", targetChannelId);
+                    await channel.watch();
+                    setActiveChannel(channel);
+                }
             } catch (err) {
                 console.error("Stream Chat init error:", err);
                 if (!cancelled) {
@@ -253,12 +264,13 @@ export default function AdminMessages() {
                                 options={options}
                                 EmptyStateIndicator={EmptyStateIndicator}
                                 showChannelSearch
+                                onSelect={(channel) => setActiveChannel(channel)}
                             />
                         </div>
 
                         {/* Active Channel — Right Panel */}
                         <div className="flex-1 flex flex-col" style={{ minWidth: 0 }}>
-                            <Channel>
+                            <Channel channel={activeChannel || undefined}>
                                 <Window>
                                     <ChannelHeader />
                                     <MessageList />

@@ -9,6 +9,7 @@ import ProductView from "./productView";
 import BookingPage from "./bookingPage"
 import RentItems from "./rentItems";
 import Messages from "./messages"
+import Profile from "../user/Profile";
 import Footer from "../../components/layouts/footer";
 
 export default function Homepage(){
@@ -25,6 +26,7 @@ export default function Homepage(){
                 <Route path="/cart" element={<BookingPage/>}/>
                 <Route path="/rent" element={<RentItems/>}/>
                 <Route path="/messages" element={<Messages/>}/>
+                <Route path="/profile" element={<Profile/>}/>
                 <Route path="/*" element={<Error/>} />
             </Routes>
         </div>
