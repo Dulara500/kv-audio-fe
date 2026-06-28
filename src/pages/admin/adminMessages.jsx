@@ -203,21 +203,13 @@ export default function AdminMessages() {
         <div className="flex flex-col gap-5">
             {/* Page Header */}
             <div className="flex flex-col gap-3">
-                <p
-                    className="text-xs font-semibold tracking-[0.3em] uppercase"
-                    style={{ color: "#E8C547" }}
-                >
+                <p className="text-xs font-semibold tracking-[0.3em] uppercase" style={{ color: "#E8C547" }}>
                     Customer Support
                 </p>
                 <h1 className="text-3xl font-bold tracking-wider uppercase text-white font-mono-display">
                     Messages<span style={{ color: "#E8C547" }}>.Inbox</span>
                 </h1>
-                <div
-                    className="w-16 h-0.5"
-                    style={{
-                        background: "linear-gradient(to right, #E8C547, transparent)",
-                    }}
-                />
+                <div className="w-16 h-0.5" style={{ background: "linear-gradient(to right, #E8C547, transparent)" }} />
                 <p className="text-sm" style={{ color: "#6B7A99" }}>
                     View and respond to customer support conversations in real time.
                 </p>
@@ -225,89 +217,90 @@ export default function AdminMessages() {
 
             {/* Chat Interface */}
             <div
-                className="rounded-xl overflow-hidden"
+                className="rounded-xl overflow-hidden flex"
                 style={{
                     border: "1px solid #2A3447",
                     height: "calc(100vh - 240px)",
                     minHeight: "500px",
                 }}
             >
-                {/* Local style overrides to prevent Stream Chat wrapper collapse on mobile */}
-                <style>{`
-                    .str-chat {
-                        height: 100% !important;
-                        width: 100% !important;
-                        display: flex;
-                        flex-direction: column;
-                    }
-                    .str-chat-channel {
-                        height: 100% !important;
-                    }
-                    /* Override library mobile styles to defer display to our manual flex/hidden layout */
-                    @media (max-width: 767px) {
-                        .str-chat__main-container,
-                        .str-chat__channel,
-                        .str-chat__chat-channel,
-                        .str-chat-channel,
-                        .str-chat__channel-list,
-                        .str-chat-channel-list {
-                            display: flex !important;
-                            height: 100% !important;
-                            width: 100% !important;
+                {/* ─── LEFT: Conversation List ─── */}
+                <div
+                    className="flex-shrink-0 flex flex-col"
+                    style={{
+                        width: activeChannel ? "0" : "100%",
+                        overflow: "hidden",
+                        borderRight: activeChannel ? "none" : "1px solid #2A3447",
+                        transition: "width 0.2s ease",
+                    }}
+                >
+                    {/* On desktop always show the 320px list */}
+                    <style>{`
+                        @media (min-width: 768px) {
+                            .admin-chat-list { width: 320px !important; border-right: 1px solid #2A3447 !important; overflow: hidden !important; }
+                            .admin-chat-window { display: flex !important; }
+                            .str-chat { height: 100% !important; }
+                            .str-chat-channel, .str-chat__channel { height: 100% !important; }
                         }
-                    }
-                `}</style>
-                <Chat client={client} theme="str-chat__theme-dark">
-                    <div className="flex h-full w-full">
-                        {/* Channel List — Left Panel */}
+                    `}</style>
+                    <div
+                        className="admin-chat-list flex flex-col h-full w-full"
+                        style={{ minWidth: 0 }}
+                    >
                         <div
-                            className={`flex-shrink-0 border-[#2A3447] md:border-r h-full w-full md:w-[320px] ${
-                                activeChannel ? "hidden md:block" : "block"
-                            }`}
+                            className="px-4 py-3 flex items-center gap-2 flex-shrink-0"
+                            style={{ borderBottom: "1px solid #2A3447", background: "#111827" }}
                         >
-                            <div
-                                className="px-4 py-3 flex items-center gap-2"
-                                style={{
-                                    borderBottom: "1px solid #2A3447",
-                                    background: "#111827",
-                                }}
-                            >
-                                <MdSupportAgent size={18} style={{ color: "#E8C547" }} />
-                                <span
-                                    className="text-xs font-bold tracking-wider uppercase"
-                                    style={{ color: "#E8C547" }}
-                                >
-                                    Conversations
-                                </span>
-                            </div>
-                            <ChannelList
-                                filters={filters}
-                                sort={sort}
-                                options={options}
-                                EmptyStateIndicator={EmptyStateIndicator}
-                                showChannelSearch
-                                onSelect={(channel) => setActiveChannel(channel)}
-                            />
+                            <MdSupportAgent size={18} style={{ color: "#E8C547" }} />
+                            <span className="text-xs font-bold tracking-wider uppercase" style={{ color: "#E8C547" }}>
+                                Conversations
+                            </span>
                         </div>
+                        <div className="flex-1 overflow-y-auto">
+                            <Chat client={client} theme="str-chat__theme-dark">
+                                <ChannelList
+                                    filters={filters}
+                                    sort={sort}
+                                    options={options}
+                                    EmptyStateIndicator={EmptyStateIndicator}
+                                    showChannelSearch
+                                    onSelect={(channel) => setActiveChannel(channel)}
+                                />
+                            </Chat>
+                        </div>
+                    </div>
+                </div>
 
-                        {/* Active Channel — Right Panel */}
-                        <div 
-                            className={`flex-1 flex flex-col h-full min-w-0 ${
-                                activeChannel ? "block" : "hidden md:flex"
-                            }`}
+                {/* ─── RIGHT: Active Chat Window ─── */}
+                <div
+                    className="admin-chat-window flex-1 flex-col"
+                    style={{
+                        display: activeChannel ? "flex" : "none",
+                        minWidth: 0,
+                        height: "100%",
+                    }}
+                >
+                    {/* Mobile back button */}
+                    <div
+                        className="flex items-center px-4 py-2 flex-shrink-0"
+                        style={{ borderBottom: "1px solid #2A3447", background: "#111827", display: activeChannel ? "flex" : "none" }}
+                    >
+                        <button
+                            onClick={() => setActiveChannel(null)}
+                            className="md:hidden text-xs font-bold uppercase tracking-wider flex items-center gap-1"
+                            style={{ color: "#E8C547" }}
                         >
-                            {/* Back button for mobile view */}
-                            {activeChannel && (
-                                <div className="md:hidden flex items-center px-4 py-2 bg-[#111827] border-b border-[#2A3447]">
-                                    <button
-                                        onClick={() => setActiveChannel(null)}
-                                        className="text-xs font-bold uppercase tracking-wider text-[#E8C547] flex items-center gap-1 hover:underline"
-                                    >
-                                        ← Back to Conversations
-                                    </button>
-                                </div>
-                            )}
+                            ← Back to Conversations
+                        </button>
+                        <span className="hidden md:flex text-xs font-bold uppercase tracking-wider items-center gap-2" style={{ color: "#E8C547" }}>
+                            <MdSupportAgent size={16} />
+                            Active Conversation
+                        </span>
+                    </div>
 
+                    {/* Stream Chat window */}
+                    <div className="flex-1 overflow-hidden" style={{ height: "100%" }}>
+                        <Chat client={client} theme="str-chat__theme-dark">
                             <Channel channel={activeChannel || undefined}>
                                 <Window>
                                     <ChannelHeader />
@@ -316,9 +309,29 @@ export default function AdminMessages() {
                                 </Window>
                                 <Thread />
                             </Channel>
+                        </Chat>
+                    </div>
+                </div>
+
+                {/* ─── Placeholder when no channel is selected (desktop only) ─── */}
+                {!activeChannel && (
+                    <div
+                        className="hidden md:flex flex-1 items-center justify-center"
+                        style={{ background: "#0B0F1A" }}
+                    >
+                        <div className="flex flex-col items-center gap-4 text-center px-8">
+                            <div
+                                className="w-16 h-16 rounded-xl flex items-center justify-center"
+                                style={{ background: "rgba(232,197,71,0.08)", border: "1px solid rgba(232,197,71,0.15)" }}
+                            >
+                                <MdSupportAgent size={28} style={{ color: "#E8C547" }} />
+                            </div>
+                            <p className="text-sm" style={{ color: "#6B7A99" }}>
+                                Select a conversation to start responding
+                            </p>
                         </div>
                     </div>
-                </Chat>
+                )}
             </div>
         </div>
     );
